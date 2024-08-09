@@ -36,7 +36,7 @@ def get_roi_pic(image, points):
 
 
 if __name__ == '__main__':
-    img = cv2.imread('3.png')
+    img = cv2.imread('1.png')
     mask_shape = img.shape[:2]
     roi1 = get_roi_pic(img, points_1)
     roi2 = get_roi_pic(img, points_2)
@@ -49,8 +49,8 @@ if __name__ == '__main__':
     dst3 = cv2.resize(roi3, dsize=roi3.shape[1::-1], interpolation=cv2.INTER_AREA)
     cv2.imshow('area3', cv2.resize(roi3, None, fx=0.2, fy=0.2))
     # contour(dst2, )
-    # cv2.imwrite('dst1.jpg', dst1)
-    # cv2.imwrite('dst2.jpg', dst2)
-    # cv2.imwrite('dst3.jpg', dst3)
+    cv2.imwrite('1_1.jpg', dst1)
+    cv2.imwrite('1_2.jpg', dst2)
+    cv2.imwrite('1_3.jpg', dst3)
     cv2.waitKey()
     cv2.destroyAllWindows()
