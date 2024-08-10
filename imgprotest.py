@@ -6,6 +6,7 @@ if __name__ == '__main__':
     # 以灰階圖像讀入
     image = cv2.imread('C:\\Users\\natsumi\\PycharmProjects\\pythonProject\\image\\data sample\\1\\photo_20240628_105242_roi2.png', cv2.IMREAD_UNCHANGED)
     # image = cv2.GaussianBlur(image, (3, 3), 0)
+    image = cv2.bilateralFilter(image, 5, 50, 100)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Canny 檢測邊緣
@@ -28,11 +29,13 @@ if __name__ == '__main__':
     # cv2.drawContours(binary_image_without_edges, contours, -1, (0), thickness=cv2.FILLED)
 
     # 形态学腐蚀，获得整体切屑轮廓
+    # ksize = 2, 2
     kernel_erode = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
     eroded = cv2.erode(binary_image_without_edges, kernel_erode, iterations=1)
 
     # 形态学膨胀，获得整个切屑特征
-    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4))
+    # ksize = 3, 3
+    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
     dilated = cv2.dilate(eroded, kernel_dilate, iterations=1)
 
     # 显示结果

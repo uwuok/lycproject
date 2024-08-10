@@ -37,6 +37,9 @@ def get_roi_pic(image, points):
 
 def roi(image_path):
     img = cv2.imread(image_path)
+    if img is None:
+        print(f"Error: Unable to load image at {image_path}")
+        return []  # 如果图像加载失败，返回空列表
     roi1 = get_roi_pic(img, points_1)
     roi2 = get_roi_pic(img, points_2)
     roi3 = get_roi_pic(img, points_3)
@@ -50,40 +53,49 @@ def roi(image_path):
         print(f"ROI image saved to {output_path}")
     return roi_paths
 
-# def process_image(image_path):
-#     # 以灰階圖像讀入
-#     image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-#
-#     # Canny 檢測邊緣
-#     edges = cv2.Canny(image, 350, 900)
-#
-#     # 先找到原圖的邊緣 (以便移除後續二值化所產生的邊緣)
-#     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-#
-#     # 自適應直方圖均衡化
-#     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-#     equalized_image = clahe.apply(image)
-#
-#     # top hat 將暗處的亮點提升
-#     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-#     top_hat = cv2.morphologyEx(equalized_image, cv2.MORPH_TOPHAT, kernel)
-#
-#     # 二值化
-#     _, binary_image = cv2.threshold(top_hat, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-#     cv2.drawContours(binary_image, contours, -1, (0), thickness=2)
-#
-#     # 形態學腐蝕，獲得整體切屑輪廓
-#     kernel_erode = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
-#     eroded = cv2.erode(binary_image, kernel_erode, iterations=1)
-#
-#     # 形態學膨脹，獲得整個切屑特徵
-#     kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-#     dilated = cv2.dilate(eroded, kernel_dilate, iterations=1)
-#
-#     # 將結果儲存至原始圖片所在的資料夾中
-#     output_path = os.path.splitext(image_path)[0] + '_processed.png'
-#     cv2.imwrite(output_path, dilated)
-#     print(f"Processed image saved to {output_path}")
+def process_image(image_path):
+    # 以灰階圖像讀入
+    image = cv2.imread('C:\\Users\\natsumi\\PycharmProjects\\pythonProject\\image\\data sample\\1\\photo_20240628_105242_roi2.png', cv2.IMREAD_UNCHANGED)
+    if image is None:
+        print(f"Error: Unable to load image at {image_path}")
+        return
+    # image = cv2.GaussianBlur(image, (3, 3), 0)
+    image = cv2.bilateralFilter(image, 5, 50, 100)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Canny 檢測邊緣
+    edges = cv2.Canny(image, 350, 1000)  # 邊緣為白色(1)
+
+    # 膨胀边缘，使其更厚
+    kernel_dilate_edges = cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4))
+    dilated_edges = cv2.dilate(edges, kernel_dilate_edges, iterations=11)
+
+    # 二值化
+    binary_image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 9, 2)
+    binary_image = cv2.bitwise_not(binary_image)
+
+    # 使用膨胀后的边缘作为掩码去除二值化图像中的外轮廓
+    mask = cv2.bitwise_not(dilated_edges)
+    binary_image_without_edges = cv2.bitwise_and(binary_image, binary_image, mask=mask)
+
+    # 轮廓填充
+    # contours, _ = cv2.findContours(dilated_edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # cv2.drawContours(binary_image_without_edges, contours, -1, (0), thickness=cv2.FILLED)
+
+    # 形态学腐蚀，获得整体切屑轮廓
+    # ksize = 2, 2
+    kernel_erode = cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2))
+    eroded = cv2.erode(binary_image_without_edges, kernel_erode, iterations=1)
+
+    # 形态学膨胀，获得整个切屑特征
+    # ksize = 3, 3
+    kernel_dilate = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    dilated = cv2.dilate(eroded, kernel_dilate, iterations=1)
+
+    # 將結果儲存至原始圖片所在的資料夾中
+    output_path = os.path.splitext(image_path)[0] + '_processed.png'
+    # cv2.imwrite(output_path, dilated)
+    print(f"Processed image saved to {output_path}")
 
 def process_images_in_folder(folder_path):
     for root, _, files in os.walk(folder_path):
@@ -91,8 +103,10 @@ def process_images_in_folder(folder_path):
             if file.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tif', '.tiff')):
                 image_path = os.path.join(root, file)
                 roi_paths = roi(image_path)
-                # for roi_path in roi_paths:
-                    # process_image(roi_path)
+                for roi_path in roi_paths:
+                    # 檢查檔案是否以 'roi' 作為後綴，並對其進行處理
+                    if any(roi_path.endswith(f'_roi{i}.png') for i in range(1, len(roi_paths) + 1)):
+                        process_image(roi_path)
 
 if __name__ == '__main__':
     # 設定要處理的資料夾路徑
