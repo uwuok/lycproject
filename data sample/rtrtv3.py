@@ -94,7 +94,7 @@ def process_image(image_path):
 
     # 將結果儲存至原始圖片所在的資料夾中
     output_path = os.path.splitext(image_path)[0] + '_processed.png'
-    # cv2.imwrite(output_path, dilated)
+    cv2.imwrite(output_path, dilated)
     print(f"Processed image saved to {output_path}")
 
 def process_images_in_folder(folder_path):
