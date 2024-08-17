@@ -12,9 +12,6 @@ def draw_polygon(event, x, y, flags, param):
     elif event == cv2.EVENT_RBUTTONDOWN:
         points.clear()
 
-
-# [(4, 0), (852, 30), (430, 420), (308, 608), (236, 756), (180, 914), (144, 1050), (112, 1208)]
-
 def getPolygonROI(img, scale):
     global points
     points = []
@@ -71,9 +68,21 @@ if __name__ == '__main__':
     mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
     img_cut = img * mask2[:, :, np.newaxis]
 
-    # print(points)
+    # 使用 Canny 邊緣檢測來找到前景的邊緣
+    edges = cv2.Canny(mask2 * 255, 100, 200)
+    print(edges)
 
+    # 在原始圖像上繪製邊緣
+    contour_img = img.copy()
+    contour_img[edges == 255] = [0, 255, 0]
+
+    # 顯示切割后的圖像和邊緣圖像
     cv2.imshow('Cut Image', img_cut)
+    cv2.imshow('Edges', contour_img)
+
+    # 保存結果圖像
     cv2.imwrite('cut_img.png', img_cut)
+    cv2.imwrite('edges_img.png', contour_img)
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()
