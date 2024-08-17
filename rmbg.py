@@ -1,36 +1,79 @@
 import cv2
 import numpy as np
 
-imgnew = cv2.imread('roiroiroinnn.png')
-height, width = imgnew.shape[:2]
+# 滑鼠回調函數
+points = []
+scale = 0.5  # 縮小比例
 
-# 缩小图像
-scale = 0.2  # 调整缩放比例
-resized_img = cv2.resize(imgnew, (int(width * scale), int(height * scale)))
+def draw_polygon(event, x, y, flags, param):
+    global points
+    if event == cv2.EVENT_LBUTTONDOWN:
+        points.append((x, y))
+    elif event == cv2.EVENT_RBUTTONDOWN:
+        points.clear()
 
-# 选择ROI
-rect1 = cv2.selectROI(resized_img)
-cv2.destroyAllWindows()
 
-b_Model = np.zeros((1, 65), np.float64)
-f_Model = np.zeros((1, 65), np.float64)
+# [(4, 0), (852, 30), (430, 420), (308, 608), (236, 756), (180, 914), (144, 1050), (112, 1208)]
 
-# 计算缩放比例
-x, y, w, h = rect1
-x = int(x / scale)
-y = int(y / scale)
-w = int(w / scale)
-h = int(h / scale)
+def getPolygonROI(img, scale):
+    global points
+    points = []
 
-# x1,y1,w1,h1 = rect1 #rect1是一個list
-print(x, y, w, h)  #57 54 302 510 (x,y座標 ,w1:寬,h1:高)
-mask_new, b_model, f_model = cv2.grabCut(imgnew, None, rect1, b_Model, f_Model, 5, cv2.GC_INIT_WITH_RECT)
-#沒有用mask所以第二個參數要填none,不然會拋錯,數字5是指跑5次
-# grabcut會把算出來的結果存回去 mask_new、b_Model、f_Model
-print(mask_new, b_model, f_model)  #2d array
+    # 縮小圖像
+    resized_img = cv2.resize(img, (int(img.shape[1] * scale), int(img.shape[0] * scale)))
 
-# 在原图上绘制选定的区域
-# roi = imgnew[y:y+h, x:x+w]
-# cv2.imshow('roi', roi)
-# cv2.waitKey()
-# cv2.destroyAllWindows()
+    # 顯示圖像並設置滑鼠回調
+    cv2.namedWindow("Image")
+    cv2.setMouseCallback("Image", draw_polygon)
+
+    while True:
+        temp_img = resized_img.copy()
+        if points:
+            cv2.polylines(temp_img, [np.array(points)], isClosed=True, color=(0, 255, 0), thickness=2)
+        cv2.imshow("Image", temp_img)
+
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord("q"):  # 按 'q' 完成選取
+            break
+
+    cv2.destroyAllWindows()
+
+    # 將選取的多邊形座標放大回原始尺寸
+    scaled_points = [(int(x / scale), int(y / scale)) for x, y in points]
+
+    print(scaled_points)
+
+    # 創建掩膜
+    mask = np.zeros(img.shape[:2], dtype=np.uint8)
+    if scaled_points:
+        cv2.fillPoly(mask, [np.array(scaled_points)], color=255)
+
+    return mask
+
+if __name__ == '__main__':
+    img = cv2.imread('roiroiroinnn.png')
+
+    # 縮放比例
+    scale = 0.5  # 根據需要調整縮放比例
+
+    mask = getPolygonROI(img, scale)
+
+    b_Model = np.zeros((1, 65), np.float64)
+    f_Model = np.zeros((1, 65), np.float64)
+
+    # 初始化掩膜：0 - 背景, 1 - 前景, 2 - 可能的背景, 3 - 可能的前景
+    mask[mask == 255] = 3  # 設定多邊形內部為可能的前景
+    mask[mask == 0] = 2  # 其他區域為可能的背景
+
+    cv2.grabCut(img, mask, None, b_Model, f_Model, 5, cv2.GC_INIT_WITH_MASK)
+
+    # 提取前景
+    mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
+    img_cut = img * mask2[:, :, np.newaxis]
+
+    # print(points)
+
+    cv2.imshow('Cut Image', img_cut)
+    cv2.imwrite('cut_img.png', img_cut)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
