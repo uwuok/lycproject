@@ -69,7 +69,7 @@ if __name__ == '__main__':
     img_cut = img * mask2[:, :, np.newaxis]
 
     # 使用 Canny 邊緣檢測來找到前景的邊緣
-    edges = cv2.Canny(mask2 * 255, 100, 200)
+    edges = cv2.Canny(mask2 * 255, 300, 400)
     print(edges)
 
     # 在原始圖像上繪製邊緣
@@ -78,11 +78,15 @@ if __name__ == '__main__':
 
     # 顯示切割后的圖像和邊緣圖像
     cv2.imshow('Cut Image', img_cut)
-    cv2.imshow('Edges', contour_img)
+    cv2.imshow('ori with Edges', contour_img)
+    cv2.imshow('edges', edges)
 
     # 保存結果圖像
-    cv2.imwrite('cut_img.png', img_cut)
-    cv2.imwrite('edges_img.png', contour_img)
-
+    # cv2.imwrite('cut_img.png', img_cut)
+    # cv2.imwrite('edges_img.png', contour_img)
+    # cv2.imwrite('new_edges.png', edges)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+
+# 如果將 edges 作為 edge_mask 運算來移除邊緣
