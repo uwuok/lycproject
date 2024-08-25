@@ -66,9 +66,9 @@ if __name__ == '__main__':
     plt.title('Dilate Image (result)')
     plt.imshow(dilated, cmap='gray')
 
-    # cv2.imshow('mask', cv2.resize(mask, None, fx=0.3, fy=0.3))
-    cv2.imwrite('okokok.png', dilated)
+    # cv2.imshow('edge_mask', cv2.resize(edge_mask, None, fx=0.3, fy=0.3))
+    # cv2.imwrite('okokok.png', dilated)
     plt.tight_layout()
     plt.show()
-    cv2.imwrite('rtrtv2.png', dilated)
+    # cv2.imwrite('rtrtv2.png', dilated)
 

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-image = cv2.imread('../3.png')
+image = cv2.imread('3.png')
 
 # x = 138, y = 115
 # x = 1119, y = 198

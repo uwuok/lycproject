@@ -7,7 +7,7 @@ points_2 = np.array([[380, 2447], [456, 2445], [593, 2709],
                      [1639, 3688], [2017, 5446], [799, 5788]])
 
 # 讀取圖像
-image = cv2.imread('../dst2.jpg')
+image = cv2.imread('dst2.jpg')
 height, width, _ = image.shape
 
 # 定義不規則多邊形的頂點

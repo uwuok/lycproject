@@ -82,7 +82,7 @@ plt.subplot(2, 5, 8)
 plt.title('Opened Image')
 plt.imshow(opened, cmap='gray')
 
-cv2.imshow('mask', cv2.resize(mask, None, fx=0.3, fy=0.3))
+cv2.imshow('edge_mask', cv2.resize(mask, None, fx=0.3, fy=0.3))
 cv2.imwrite('okokok.png', opened)
 plt.tight_layout()
 plt.show()

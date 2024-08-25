@@ -4,17 +4,19 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     # 以灰階圖像讀入
-    image = cv2.imread('C:\\Users\\natsumi\\PycharmProjects\\pythonProject\\image\\data sample\\1\\photo_20240628_105242_roi2.png', cv2.IMREAD_UNCHANGED)
+    # image = cv2.imread('C:\\Users\\natsumi\\PycharmProjects\\pythonProject\\image\\data sample\\1\\photo_20240628_105242_roi2.png', cv2.IMREAD_UNCHANGED)
     # image = cv2.GaussianBlur(image, (3, 3), 0)
+    image = cv2.imread()
     image = cv2.bilateralFilter(image, 5, 50, 100)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # edges = cv2.imread('edge_mask/new_edges_mask_1.png')
 
     # Canny 檢測邊緣
-    edges = cv2.Canny(image, 350, 1000)  # 邊緣為白色(1)
+    # edges = cv2.Canny(image, 350, 1000)  # 邊緣為白色(1)
 
     # 膨胀边缘，使其更厚
     kernel_dilate_edges = cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4))
-    dilated_edges = cv2.dilate(edges, kernel_dilate_edges, iterations=11)
+    dilated_edges = cv2.dilate(edges, kernel_dilate_edges, iterations=5)
 
     # 二值化
     binary_image = cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 9, 2)

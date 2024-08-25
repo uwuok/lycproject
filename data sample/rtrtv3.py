@@ -55,7 +55,7 @@ def roi(image_path):
 
 def process_image(image_path):
     # 以灰階圖像讀入
-    image = cv2.imread('C:\\Users\\natsumi\\PycharmProjects\\pythonProject\\image\\data sample\\1\\photo_20240628_105242_roi2.png', cv2.IMREAD_UNCHANGED)
+    image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
     if image is None:
         print(f"Error: Unable to load image at {image_path}")
         return

@@ -18,7 +18,7 @@ def contour(img, thresh):
 def m():
 
     # 讀取灰階圖像
-    img = cv2.imread('../image/dst2.jpg', 0)
+    img = cv2.imread('deprecation/dst2.jpg', 0)
 
     # 固定閾值化
     _, binary_fixed = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     m()
 
     # 讀取圖像並轉換為灰度圖像
-    img = cv2.imread('dst2.jpg')
+    img = cv2.imread('deprecation/dst2.jpg')
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # 顯示灰度圖像

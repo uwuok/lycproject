@@ -59,9 +59,9 @@ def draw_polygon(image, points, color, thickness):
 
 # def get_roi_pic(image, points: DEFAULT_DTYPE, mask_shape):
 #     points_ = np.array(points, dtype=DEFAULT_DTYPE).reshape((-1, 1, 2))
-#     mask = np.zeros(mask_shape, dtype=np.uint8)
-#     cv2.fillPoly(mask, [points_], 255)
-#     roi_img = cv2.bitwise_and(image, image, mask=mask)
+#     edge_mask = np.zeros(mask_shape, dtype=np.uint8)
+#     cv2.fillPoly(edge_mask, [points_], 255)
+#     roi_img = cv2.bitwise_and(image, image, edge_mask=edge_mask)
 #
 #     # 計算最小外接矩形
 #     rect = cv2.minAreaRect(points_)
@@ -141,7 +141,7 @@ def get_roi_pic_v2(image, points):
 
 
 if __name__ == '__main__':
-    img = cv2.imread('../2.png')
+    img = cv2.imread('2.png')
     roi2 = get_roi_pic_v2(img, points_2)
     cv2.imshow('roi2', cv2.resize(roi2, None, fx=0.3, fy=0.3))
     cv2.waitKey()
@@ -149,7 +149,7 @@ if __name__ == '__main__':
 
 def main():
     # area1 [137, 219], [1027, 246], [1105, 1380], [270, 1447]
-    img = cv2.imread('../2.png')
+    img = cv2.imread('2.png')
     # points1 = np.array([[137, 219], [1027, 246], [1105, 1380], [270, 1447]], dtype=np.float32)
     # new_points1 = np.array([[0, 0], [300, 0], [300, 400], [0, 400]], dtype=np.float32)
     # dst1 = perspective_transform(img, points1)

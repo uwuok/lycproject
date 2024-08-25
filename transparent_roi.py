@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # 讀取圖像
-image = cv2.imread('4.png', cv2.IMREAD_UNCHANGED)
+image = cv2.imread('deprecation/4.png', cv2.IMREAD_UNCHANGED)
 
 # 定義多邊形的頂點
 points = np.array([[100, 100], [200, 100], [250, 200], [150, 250]], np.int32)

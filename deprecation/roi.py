@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # 讀取影像
-image = cv2.imread('../4.png')
+image = cv2.imread('4.png')
 
 # 創建一個與影像尺寸相同的遮罩，初始為全黑
 mask1 = np.zeros(image.shape[:2], dtype=np.uint8)
@@ -47,7 +47,7 @@ roi_3 = cv2.bitwise_and(image, image, mask=mask3)
 
 # 顯示原影像、遮罩和ROI
 cv2.imshow('Original Image', cv2.resize(image, None, fx=0.1, fy=0.1))
-# cv2.imshow('Mask', cv2.resize(mask, None, fx=0.1, fy=0.1))
+# cv2.imshow('Mask', cv2.resize(edge_mask, None, fx=0.1, fy=0.1))
 cv2.imshow('roi_1', cv2.resize(roi_1, None, fx=0.1, fy=0.1))
 cv2.imshow('roi_2', cv2.resize(roi_2, None, fx=0.1, fy=0.1))
 cv2.imshow('roi_3', cv2.resize(roi_3, None, fx=0.1, fy=0.1))

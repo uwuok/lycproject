@@ -28,7 +28,7 @@ def draw_polygon(image, points, color, thickness):
 def put_text(image, text, position, font=cv2.FONT_HERSHEY_SIMPLEX, font_scale=1, color=(255, 255, 255), thickness=2):
     cv2.putText(image, text, position, font, font_scale, color, thickness)
 
-image = cv2.imread('../3.png')
+image = cv2.imread('3.png')
 
 # 1左上角:195,285  =>522,286  =>535,656  =>209,669
 # 2左下角:574,393 8=>1657,3702=>1990,5412=>809,5769

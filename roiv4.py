@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 if __name__ == '__main__':
-    ori = cv2.imread('1.png', cv2.IMREAD_UNCHANGED)
+    ori = cv2.imread('deprecation/1.png', cv2.IMREAD_UNCHANGED)
     gray = cv2.cvtColor(ori, cv2.COLOR_BGR2GRAY)
     # _, binary_image = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     blur = cv2.medianBlur(gray, 5)

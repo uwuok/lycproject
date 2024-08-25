@@ -31,7 +31,7 @@ def get_bounding_box_corners(points):
 
 
 # 讀取影像
-image = cv2.imread('../3.png')
+image = cv2.imread('3.png')
 
 # area 1: 左上角
 # 132, 65 左上

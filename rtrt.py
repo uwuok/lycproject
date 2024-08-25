@@ -90,7 +90,7 @@ plt.imshow(dilated, cmap='gray')
 # plt.title('Image with Black Contours')
 # plt.imshow(image_with_black_contours, cmap='gray')
 
-# cv2.imshow('mask', cv2.resize(mask, None, fx=0.3, fy=0.3))
+# cv2.imshow('edge_mask', cv2.resize(edge_mask, None, fx=0.3, fy=0.3))
 cv2.imwrite('rtrt.png', dilated)
 plt.tight_layout()
 plt.show()

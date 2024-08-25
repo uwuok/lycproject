@@ -4,7 +4,7 @@ import numpy as np
 
 if __name__ == '__main__':
     # 讀取影像
-    image = cv2.imread('../3.png')
+    image = cv2.imread('3.png')
 
     # 創建一個與影像尺寸相同的遮罩，初始為全黑
     mask1 = np.zeros(image.shape[:2], dtype=np.uint8)

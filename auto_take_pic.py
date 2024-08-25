@@ -3,7 +3,12 @@ import schedule
 import time
 from datetime import datetime
 
+
 cap = cv2.VideoCapture(0, cv2.CAP_MSMF)
+# 設置解析度
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 8000)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 6000)
+
 cnt = 0
 def list_cameras():
     index = 0
@@ -24,9 +29,7 @@ def take_picture():
     if not cap.isOpened():
         print("無法抓取鏡頭")
         return
-    # 設置解析度
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 8000)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 6000)
+
 
     ret, frame = cap.read()
     # round 1: 右上開始 104321 (結束)

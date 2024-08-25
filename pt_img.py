@@ -24,7 +24,7 @@ def calculate_output_size(points, transform_matrix):
     height = np.max(bounding_box[:, 1]) - np.min(bounding_box[:, 1])
     return int(width), int(height), transformed_points
 
-image = cv2.imread('3.png')
+image = cv2.imread('deprecation/3.png')
 
 points1 = np.array([[139, 188], [986, 250], [683, 522], [164, 522]], dtype=np.float32)
 points2 = np.array([[164, 522], [683, 522], [423, 884], [213, 884]], dtype=np.float32)
