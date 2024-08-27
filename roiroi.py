@@ -44,14 +44,14 @@ def getPolygonROI(img, scale):
     return scaled_points
 
 if __name__ == '__main__':
-    img = cv2.imread('edge_mask/final_new_roi3.png', cv2.IMREAD_UNCHANGED)
+    img = cv2.imread('new2.png', cv2.IMREAD_UNCHANGED)
 
     # 创建黑色遮罩
     mask_shape = img.shape[:2]
     mask = np.zeros(mask_shape, dtype=np.uint8)
 
     # 填充多边形范围
-    ps = getPolygonROI(img, scale=0.2)
+    ps = getPolygonROI(img, scale=0.1)
     cv2.fillPoly(mask, [ps], 255)
 
     # 提取 ROI
@@ -63,6 +63,6 @@ if __name__ == '__main__':
 
     # 显示结果
     cv2.imshow('ROI Crop', cv2.resize(roi_crop, None, fx=0.2, fy=0.2))
-    cv2.imwrite('edge_mask/final_new_roi33.png', roi_crop)
+    cv2.imwrite('roi2.png', roi_crop)
     cv2.waitKey()
     cv2.destroyAllWindows()
