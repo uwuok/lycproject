@@ -16,10 +16,10 @@ def draw_poly(img, points):
 
 
 def process_edge(img, points):
-    img = np.zeros_like(img)
-    mask = draw_poly(img, points)
+    mask = np.zeros_like(img)
+    edge = draw_poly(mask, points)
     x, y, w, h = cv2.boundingRect(points)
-    return mask[y:y + h, x:x + w]
+    return edge[y:y + h, x:x + w]
 
 
 def process_roi(img, points):
@@ -55,16 +55,24 @@ def image_processed(img, points):
     # 去除邊緣（如果需要）
     # rm_edge = cv2.bitwise_xor(b, edge)
 
+    # close 先膨脹 後侵蝕 -> 先填補積屑的孔洞，侵蝕掉一些細小的噪點
+    closed = cv2.morphologyEx(b, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=5)
+
+    # open 先侵蝕 後膨脹
+    # dilated = cv2.morphologyEx(b, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=1)
+
     # 形態學腐蝕，獲得整體切屑輪廓
-    eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1)), iterations=2)
+    eroded = cv2.erode(closed, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=2)
 
     # 膨脹
-    dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=2)
+    dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7)), iterations=5)
 
     # 計算 ROI 面積
     roi_area = cv2.contourArea(points)
-    white_pixels = cv2.countNonZero(b)
+    white_pixels = cv2.countNonZero(dilated)
     black_pixels = roi_area - white_pixels
+    white_ratio = white_pixels / roi_area
+    black_ratio = black_pixels / roi_area
 
     # cv2.imshow('b', cv2.resize(b, None, fx=0.1, fy=0.1))
 
@@ -79,11 +87,10 @@ def image_processed(img, points):
 
 
     print(f"ROI 面積: {roi_area} 像素")
-    # print(f"ROI1 面積: {roi_area1} 像素")
     print(f"白色像素： {white_pixels}")
     print(f"黑色像素： {black_pixels}")
-    # print(f"白色像素比例: {white_ratio:.2%}")
-    # print(f"黑色像素比例: {black_ratio:.2%}")
+    print(f"白色像素比例: {white_ratio:.2%}")
+    print(f"黑色像素比例: {black_ratio:.2%}")
 
     cv2.waitKey()
     cv2.destroyAllWindows()
