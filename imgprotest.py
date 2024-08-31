@@ -39,33 +39,31 @@ def image_processed(img, points):
     edge = process_edge(img, points)
 
     # 直方圖等化提高對比度
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(3, 3))
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(1, 1))
     eq = clahe.apply(roi)
 
     # 雙邊濾波
     # bf = cv2.bilateralFilter(eq, 3, 25, 50)
-    bf = cv2.GaussianBlur(eq, (5, 5), 0)
+    bf = cv2.GaussianBlur(eq, (3, 3), 0)
     # top hat
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    th = cv2.morphologyEx(bf, cv2.MORPH_TOPHAT, kernel)
+    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    th = cv2.morphologyEx(bf, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)))
+    # th = cv2.morphologyEx(bf, cv2.MORPH_BLACKHAT, kernel)
 
     # 二值化
     # _, b = cv2.threshold(th, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 33, -1)
+    b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 51, -1)
     # 去除邊緣（如果需要）
     # rm_edge = cv2.bitwise_xor(b, edge)
 
-    # close 先膨脹 後侵蝕 -> 先填補積屑的孔洞，侵蝕掉一些細小的噪點
-    closed = cv2.morphologyEx(b, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=5)
-
-    # open 先侵蝕 後膨脹
-    # dilated = cv2.morphologyEx(b, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=1)
-
     # 形態學腐蝕，獲得整體切屑輪廓
-    eroded = cv2.erode(closed, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=2)
-
+    # good
+    # eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=3)
+    eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=2)
+    # dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=1)
+    # eroded = cv2.erode(dilated, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=2)
     # 膨脹
-    dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7)), iterations=5)
+    dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10)), iterations=4)
 
     # 計算 ROI 面積
     roi_area = cv2.contourArea(points)
@@ -91,13 +89,13 @@ def image_processed(img, points):
     print(f"黑色像素： {black_pixels}")
     print(f"白色像素比例: {white_ratio:.2%}")
     print(f"黑色像素比例: {black_ratio:.2%}")
-
-    cv2.waitKey()
-    cv2.destroyAllWindows()
-
+    #
+    # # cv2.waitKey()
+    # # cv2.destroyAllWindows()
+    #
     # 顯示結果
     titles = ['Grayscale', 'ROI', 'Edge', 'Equalized', 'Top Hat',
-              'Binary', 'Eroded', 'Dilated']
+              'Binary', 'eroded', 'dilated']
     images = [img, roi, edge, eq, th, b, eroded, dilated]
 
     plt.figure(figsize=(15, 10))
