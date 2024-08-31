@@ -10,14 +10,11 @@ def c():
 
 
 
-def draw_poly(img, points):
-    cv2.polylines(img, [np.array(points)], isClosed=True, color=(255, 255, 255), thickness=10)
-    return img
-
-
 def process_edge(img, points):
     mask = np.zeros_like(img)
-    edge = draw_poly(mask, points)
+    # edge = draw_poly(mask, points)
+    edge = cv2.polylines(mask, [np.array(points)], isClosed=True, color=(255, 255, 255), thickness=1)
+    edge = cv2.dilate(edge, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)), iterations=3)
     x, y, w, h = cv2.boundingRect(points)
     return edge[y:y + h, x:x + w]
 
@@ -53,13 +50,15 @@ def image_processed(img, points):
     # 二值化
     # _, b = cv2.threshold(th, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 19, -1)
-    # 去除邊緣（如果需要）
+    # 使用 edge 去除邊緣（如果需要）
     # rm_edge = cv2.bitwise_xor(b, edge)
-
+    # edge 黑底白邊 -> 白底黑邊
+    edge = cv2.bitwise_not(edge)
+    rm_bg = cv2.bitwise_and(b, edge)
     # 形態學腐蝕，獲得整體切屑輪廓
     # good
     # eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=3)
-    eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=2)
+    eroded = cv2.erode(rm_bg, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=2)
     # dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=1)
     # eroded = cv2.erode(dilated, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=2)
     # 膨脹
@@ -95,8 +94,8 @@ def image_processed(img, points):
     #
     # 顯示結果
     titles = ['Grayscale', 'ROI', 'Edge', 'Equalized', 'Top Hat',
-              'Binary', 'eroded', 'dilated']
-    images = [img, roi, edge, eq, th, b, eroded, dilated]
+              'Binary', 'rm bg', 'eroded', 'dilated']
+    images = [img, roi, edge, eq, th, b, rm_bg, eroded, dilated]
 
     plt.figure(figsize=(15, 10))
     for i in range(len(images)):
@@ -124,8 +123,8 @@ if __name__ == '__main__':
                    [2610, 3770], [2650, 3610], [2670, 3530],
                    [2730, 3410]])
     image = cv2.imread('new2.png')
-    # image_processed(image, p1)
-    image_processed(image, p2)
+    image_processed(image, p1)
+    # image_processed(image, p2)
     # image_processed(image, p3)
     # f(image)
     # c()
