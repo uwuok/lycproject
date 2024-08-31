@@ -44,22 +44,22 @@ def image_processed(img, points):
 
     # 雙邊濾波
     # bf = cv2.bilateralFilter(eq, 3, 25, 50)
-    bf = cv2.GaussianBlur(eq, (3, 3), 0)
+    bf = cv2.GaussianBlur(eq, (5, 5), 0)
     # top hat
     # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    th = cv2.morphologyEx(bf, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)))
+    th = cv2.morphologyEx(bf, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11)))
     # th = cv2.morphologyEx(bf, cv2.MORPH_BLACKHAT, kernel)
 
     # 二值化
     # _, b = cv2.threshold(th, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 51, -1)
+    b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 19, -1)
     # 去除邊緣（如果需要）
     # rm_edge = cv2.bitwise_xor(b, edge)
 
     # 形態學腐蝕，獲得整體切屑輪廓
     # good
     # eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=3)
-    eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=2)
+    eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=2)
     # dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=1)
     # eroded = cv2.erode(dilated, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=2)
     # 膨脹
