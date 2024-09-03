@@ -138,13 +138,16 @@ if __name__ == '__main__':
     # 798 good
     # image = cv2.imread('photo_20240718_153843.png')
     # 3016 bad (過曝) top hat 結果過好，需改進直方圖等化 或 再加上模糊
-    image = cv2.imread('photo_20240718_153508.png')
+    # image = cv2.imread('photo_20240718_153508.png')
     # 1344 bad (過曝) top hat 效果可，二值化後過曝
     # image = cv2.imread('photo_20240718_154919.png')
     # 629 bad (只找到部分積屑) top hat 效果差
     # image = cv2.imread('photo_20240718_155240.png')
-    image_processed(image, p2)
+    # image_processed(image, p2)
 
 
     # f(image)
     # c()
+    import os
+    print(os.getcwd())
+    # C:\Users\natsumi\PycharmProjects\pythonProject\image
