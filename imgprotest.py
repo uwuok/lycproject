@@ -8,6 +8,15 @@ def c():
     a = cv2.contourArea(points)
     print("area a is:", a)
 
+    # 計算區域內的非零值的個數
+    # mask = np.ones_like(dilated)
+    # print(cv2.countNonZero(mask))  # 14727801
+    #
+    # # 計算區域內的面積
+    # height, width = mask.shape
+    # ps = np.array([[0, 0], [0, width], [height, width], [height, 0]])
+    # print(cv2.contourArea(ps))  # # 14727801.0
+
 
 
 def process_edge(img, points):
@@ -285,46 +294,55 @@ def calculate_blurriness(img):
 
 
 def v2(img, ps):
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    roi = process_roi(img, ps)
-    edge = process_edge(img, ps)
+    gray = img.copy()
+    if len(img.shape) == 3:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    roi = process_roi(gray, ps)
+    edge = process_edge(gray, ps)
 
     low_blur_threshold = 700
-    high_blur_threshold = 1100
+    high_blur_threshold = 810
 
     blur_var = calculate_blurriness(roi)
 
     eq = None
     th = None
     b = None
+    bf = None
+    rm_edge = None
+    eroded = None
+    dilated = None
+
     print(f'blur_var = {blur_var}')
+
+    while blur_var > 810:
+        roi = cv2.GaussianBlur(roi, (3, 3), 0) # ksize 改成動態調整
+        blur_var = calculate_blurriness(roi)
+
+
     if blur_var <= low_blur_threshold:
         eq = cv2.equalizeHist(roi)
         th = cv2.morphologyEx(eq, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7)))
         b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 17, -1)
+        edge = cv2.bitwise_not(edge)
+        rm_edge = cv2.bitwise_and(b, edge)
     elif low_blur_threshold < blur_var < high_blur_threshold:
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(5, 5))
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(1, 1))
         eq = clahe.apply(roi)
-        th = cv2.morphologyEx(eq, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4)))
-        b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, -1)
+        bf = cv2.GaussianBlur(eq, (5, 5), 0)
+        th = cv2.morphologyEx(bf, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (11, 11)))
+        b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 19, -1)
+        edge = cv2.bitwise_not(edge)
+        rm_edge = cv2.bitwise_and(b, edge)
+        eroded = cv2.erode(rm_edge, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=2)
+        dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10)), iterations=4)
     else:
-        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(3, 3))
-        eq = clahe.apply(roi)
-        th = cv2.morphologyEx(eq, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
-        b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 3, -1)
+        print(f'blur_var = {blur_var} (wrong)')
     # 二值化
     # _, b = cv2.threshold(th, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
-    edge = cv2.bitwise_not(edge)
-    rm_edge = cv2.bitwise_and(b, edge)
-    # 形態學腐蝕，獲得整體切屑輪廓
-    # good
-    # eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=3)
-    eroded = cv2.erode(rm_edge, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=1)
-    # dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=1)
-    # eroded = cv2.erode(dilated, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=2)
-    # 膨脹
-    dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10)), iterations=4)
+    # eroded = cv2.erode(rm_edge, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=1)
+    # dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10)), iterations=4)
 
     # 計算 ROI 面積
     roi_area = cv2.contourArea(ps)
@@ -333,30 +351,16 @@ def v2(img, ps):
     white_ratio = white_pixels / roi_area
     black_ratio = black_pixels / roi_area
 
-    # cv2.imshow('b', cv2.resize(b, None, fx=0.1, fy=0.1))
-
-    # 計算區域內的非零值的個數
-    # mask = np.ones_like(dilated)
-    # print(cv2.countNonZero(mask))  # 14727801
-    #
-    # # 計算區域內的面積
-    # height, width = mask.shape
-    # ps = np.array([[0, 0], [0, width], [height, width], [height, 0]])
-    # print(cv2.contourArea(ps))  # # 14727801.0
-
     print(f"ROI 面積: {roi_area} 像素")
     print(f"白色像素： {white_pixels}")
     print(f"黑色像素： {black_pixels}")
     print(f"白色像素比例: {white_ratio:.2%}")
     print(f"黑色像素比例: {black_ratio:.2%}")
-    #
-    # # cv2.waitKey()
-    # # cv2.destroyAllWindows()
-    #
+
     # 顯示結果
-    titles = ['ROI', 'Edge', 'Top Hat',
+    titles = ['ROI', 'Edge', 'eq', 'blur', 'Top Hat',
               'Binary', 'rm edge', 'eroded', 'dilated']
-    images = [roi, edge, th, b, rm_edge, eroded, dilated]
+    images = [roi, edge, eq, bf, th, b, rm_edge, eroded, dilated]
 
     plt.figure(figsize=(15, 10))
     for i in range(len(images)):
@@ -390,18 +394,19 @@ if __name__ == '__main__':
                    [3010, 5990], [2630, 4310], [2590, 3970],
                    [2610, 3770], [2650, 3610], [2670, 3530],
                    [2730, 3410]])
-    # image = cv2.imread('new2.png')
+    # image = cv2.imread('C:\\Users\\natsumi\\PycharmProjects\\pythonProject\\image\\new2.png')
+
     # 1 清晰 798
-    image = cv2.imread('photo_20240718_153843.png')
-    # 1448, 411, 3016
-    # image = cv2.imread('photo_20240718_153508.png')
-    # 1 模糊 481, 171, 1344
+    # image = cv2.imread('photo_20240718_153843.png')
+    # 2 清晰 3016
+    image = cv2.imread('photo_20240718_153508.png')
+    # 1 模糊 1344
     # image = cv2.imread('photo_20240718_154919.png')
-    # 2 模糊 211, 77, 629
+    # 2 模糊 629
     # image = cv2.imread('photo_20240718_155240.png')
     # cv2.imwrite('dd2.png', process_roi(image, p2))
     # image_processed(image, p2)
-    image_processed(image, p2)
+    # image_processed(image, p2)
     # contours_test(image, p2)
     # image_processed(image, p3)
     # f(image)
@@ -411,4 +416,4 @@ if __name__ == '__main__':
     # integral_processing(image, p2)
     # qq(image, p2)
     # print(calculate_blurriness(process_roi(image, p2)))
-    # v2(image, p2)
+    v2(image, p2)
