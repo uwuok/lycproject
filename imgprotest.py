@@ -112,26 +112,88 @@ def image_processed(img, points):
     plt.show()
 
 
+# llm version
+def qq(img, points):
+    roi = process_roi(img, points)
+    res = roi.copy()
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+    eq = cv2.equalizeHist(gray)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+    top_hat = cv2.morphologyEx(eq, cv2.MORPH_TOPHAT, kernel)
+    adaptive_thresh = cv2.adaptiveThreshold(top_hat, 255,
+                                            cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                            cv2.THRESH_BINARY, 11, 2)
+    edges = cv2.Canny(adaptive_thresh, 50, 500)
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    threshold_area = 50
+    for contour in contours:
+        if cv2.contourArea(contour) > threshold_area:
+            cv2.drawContours(res, [contour], -1, (0, 255, 0), 2)
+    cv2.imshow('Origin', cv2.resize(roi, None, fx=0.2, fy=0.2))
+    cv2.imshow('Detected Bumps', cv2.resize(res, None, fx=0.2, fy=0.2))
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+
+
+def integral_processing(img, points):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    Gv = process_roi(gray, points)
+    Gv = cv2.resize(Gv, None, fx=0.5, fy=0.5)
+    nx, ny = Gv.shape[0], Gv.shape[1]
+    # 計算全圖平均亮度
+    brt = np.sum(Gv) / (nx * ny)
+
+    # 計算空間亮度偏差值的局部積分
+    T = np.zeros((nx, ny), dtype=int)
+    mx = 0
+
+    for i in range(3, nx - 3):
+        for j in range(3, ny - 3):
+            d = 0
+            for x in range(-3, 4):
+                for y in range(-3, 4):
+                    d += abs(Gv[i + x, j + y] - brt)  # 與平均亮度的偏差值
+            T[i, j] = d  # 此點積分值
+            if d > mx:
+                mx = d  # 最大積分值
+
+    # 積分陣列轉換為灰階
+    B = np.zeros((nx, ny), dtype=np.uint8)  # 重設灰階陣列
+    f = mx / 255 / 2  # 積分值投射為灰階值之比例(X2 倍)
+
+    for i in range(3, nx - 3):
+        for j in range(3, ny - 3):
+            u = T[i, j] / f
+            if u > 255:
+                u = 255
+            B[i, j] = 255 - int(u)  # 灰階，目標為深色
+
+    cv2.imwrite('gray_integral.png', B)
+    # 顯示灰階圖像
+    cv2.imshow("Gray Image", B)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    # 範例調用
+    # nx, ny = 10, 10  # 這裡應替換為圖像的實際大小
+    # Gv = np.random.randint(0, 256, (nx, ny))  # 示例圖像數據
+    # integral_processing(Gv, nx, ny)
+
+
 def contours_test(img, points):
     color_roi = process_roi(img, points)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     roi = process_roi(gray, points)
-    edge = process_edge(gray, points)
-    bf = cv2.GaussianBlur(roi, (21, 21), 0)
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(5, 5))
-    # clahe = cv2.createCLAHE()
-    eq = clahe.apply(bf)
-    # eq = cv2.equalizeHist(roi)
-    th = cv2.morphologyEx(eq, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7)))
+    bf = cv2.GaussianBlur(roi, (17, 17), 0)
     # 二值化
-    b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 3, -1)
-    # ret, b = cv2.threshold(th, 10, 255, cv2.THRESH_BINARY)
-    # contours, hierarchy = cv2.findContours(b, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    contours, hierarchy = cv2.findContours(b, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    with_contours = cv2.drawContours(color_roi, contours, -1, (0, 255, 0), 10)
-    edge = cv2.bitwise_not(edge)
-    rm_edge = cv2.bitwise_and(b, edge)
-    eroded = cv2.erode(rm_edge, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=1)
+    b = cv2.adaptiveThreshold(bf, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 3, -1)
+    edge = cv2.Canny(b, 10, 20)
+    min_area = 10
+    # th = cv2.morphologyEx(bf, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4)))
+    contours, hierarchy = cv2.findContours(edge, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    large_contours = [cnt for cnt in contours if cv2.contourArea(cnt) > min_area]
+    with_contours = cv2.drawContours(color_roi, large_contours, -1, (0, 255, 0), 10)
+    eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=1)
     dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10)), iterations=4)
 
     # 計算 ROI 面積
@@ -147,9 +209,9 @@ def contours_test(img, points):
     print(f"白色像素比例: {white_ratio:.2%}")
     print(f"黑色像素比例: {black_ratio:.2%}")
 
-    titles = ['ROI', 'Edge', 'Equalized', 'GaussianBlur', 'Top Hat',
-              'Binary', 'with_contours', 'rm edge', 'eroded', 'dilated']
-    images = [roi, edge, eq, bf, th, b, with_contours, rm_edge, eroded, dilated]
+    titles = ['ROI', 'Edge', 'GaussianBlur',
+              'Binary', 'with_contours', 'eroded', 'dilated']
+    images = [roi, edge, bf, b, with_contours, eroded, dilated]
 
     plt.figure(figsize=(15, 10))
     for i in range(len(images)):
@@ -213,6 +275,105 @@ def blob_test(img, points):
     cv2.destroyAllWindows()
 
 
+def calculate_blurriness(img):
+    if len(img.shape) == 3:
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = img.copy()
+    gray = cv2.resize(gray, None, fx=0.1, fy=0.1)
+    laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+    return laplacian_var
+
+
+def v2(img, ps):
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    roi = process_roi(img, ps)
+    edge = process_edge(img, ps)
+
+    low_blur_threshold = 700
+    high_blur_threshold = 1100
+
+    blur_var = calculate_blurriness(roi)
+
+    eq = None
+    th = None
+    b = None
+    print(f'blur_var = {blur_var}')
+    if blur_var <= low_blur_threshold:
+        eq = cv2.equalizeHist(roi)
+        th = cv2.morphologyEx(eq, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7)))
+        b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 17, -1)
+    elif low_blur_threshold < blur_var < high_blur_threshold:
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(5, 5))
+        eq = clahe.apply(roi)
+        th = cv2.morphologyEx(eq, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4)))
+        b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, -1)
+    else:
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(3, 3))
+        eq = clahe.apply(roi)
+        th = cv2.morphologyEx(eq, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
+        b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 3, -1)
+    # 二值化
+    # _, b = cv2.threshold(th, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    edge = cv2.bitwise_not(edge)
+    rm_edge = cv2.bitwise_and(b, edge)
+    # 形態學腐蝕，獲得整體切屑輪廓
+    # good
+    # eroded = cv2.erode(b, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=3)
+    eroded = cv2.erode(rm_edge, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=1)
+    # dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=1)
+    # eroded = cv2.erode(dilated, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), iterations=2)
+    # 膨脹
+    dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_RECT, (10, 10)), iterations=4)
+
+    # 計算 ROI 面積
+    roi_area = cv2.contourArea(ps)
+    white_pixels = cv2.countNonZero(dilated)
+    black_pixels = roi_area - white_pixels
+    white_ratio = white_pixels / roi_area
+    black_ratio = black_pixels / roi_area
+
+    # cv2.imshow('b', cv2.resize(b, None, fx=0.1, fy=0.1))
+
+    # 計算區域內的非零值的個數
+    # mask = np.ones_like(dilated)
+    # print(cv2.countNonZero(mask))  # 14727801
+    #
+    # # 計算區域內的面積
+    # height, width = mask.shape
+    # ps = np.array([[0, 0], [0, width], [height, width], [height, 0]])
+    # print(cv2.contourArea(ps))  # # 14727801.0
+
+    print(f"ROI 面積: {roi_area} 像素")
+    print(f"白色像素： {white_pixels}")
+    print(f"黑色像素： {black_pixels}")
+    print(f"白色像素比例: {white_ratio:.2%}")
+    print(f"黑色像素比例: {black_ratio:.2%}")
+    #
+    # # cv2.waitKey()
+    # # cv2.destroyAllWindows()
+    #
+    # 顯示結果
+    titles = ['ROI', 'Edge', 'Top Hat',
+              'Binary', 'rm edge', 'eroded', 'dilated']
+    images = [roi, edge, th, b, rm_edge, eroded, dilated]
+
+    plt.figure(figsize=(15, 10))
+    for i in range(len(images)):
+        ax = plt.subplot(2, 5, i + 1)
+        plt.imshow(images[i], cmap='gray')
+        plt.title(titles[i])
+        plt.axis('off')
+        # 在影像旁邊添加數值標示 (像素位置)
+        h, w = images[i].shape[:2]
+        plt.text(w + 10, h // 2, f"({w}, {h})", fontsize=12, ha='left', va='center')
+
+    plt.tight_layout()
+    plt.show()
+
+
+
+
 if __name__ == '__main__':
     p1 = np.array([[357, 502], [1192, 552], [1112, 607],
                    [1012, 682], [932, 747], [852, 832],
@@ -230,17 +391,24 @@ if __name__ == '__main__':
                    [2610, 3770], [2650, 3610], [2670, 3530],
                    [2730, 3410]])
     # image = cv2.imread('new2.png')
-    # 1 清晰
-    # image = cv2.imread('photo_20240718_153843.png')
-    image = cv2.imread('photo_20240718_153508.png')
-    # 1 模糊
+    # 1 清晰 798
+    image = cv2.imread('photo_20240718_153843.png')
+    # 1448, 411, 3016
+    # image = cv2.imread('photo_20240718_153508.png')
+    # 1 模糊 481, 171, 1344
     # image = cv2.imread('photo_20240718_154919.png')
-    # 2 模糊
+    # 2 模糊 211, 77, 629
     # image = cv2.imread('photo_20240718_155240.png')
+    # cv2.imwrite('dd2.png', process_roi(image, p2))
     # image_processed(image, p2)
-    # image_processed(image, p2)
+    image_processed(image, p2)
+    # contours_test(image, p2)
     # image_processed(image, p3)
     # f(image)
     # c()
-    contours_test(image, p2)
+    # contours_test(image, p2)
     # blob_test(image, p2)
+    # integral_processing(image, p2)
+    # qq(image, p2)
+    # print(calculate_blurriness(process_roi(image, p2)))
+    # v2(image, p2)
