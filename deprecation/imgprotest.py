@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+from PIL import Image, ImageEnhance
 
 
 def c():
@@ -64,24 +65,21 @@ def image_processed(img, points):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # 2. 提取 ROI 圖像以及邊緣
-    roi = process_roi2(img, points)
+    roi = process_roi(img, points)
     edge = process_edge(img, points)
 
     # 直方圖等化提高對比度
+    # eq = cv2.equalizeHist(roi)
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(5, 5))
     eq = clahe.apply(roi)
 
-    # 雙邊濾波 降躁
-    # bf = cv2.bilateralFilter(eq, 3, 25, 50)
-    bf = cv2.GaussianBlur(eq, (11, 11), 0)
     # top hat
     # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    th = cv2.morphologyEx(bf, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4)))
-    # th = cv2.morphologyEx(bf, cv2.MORPH_BLACKHAT, kernel)
+    th = cv2.morphologyEx(eq, cv2.MORPH_TOPHAT, cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4)))
 
     # 二值化
     # _, b = cv2.threshold(th, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, -1)
+    b = cv2.adaptiveThreshold(th, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, -2)
     # 使用 edge 去除邊緣（如果需要）
     # rm_edge = cv2.bitwise_xor(b, edge)
     # edge 黑底白邊 -> 白底黑邊
@@ -125,11 +123,10 @@ def image_processed(img, points):
     # # cv2.destroyAllWindows()
     #
     # 顯示結果
-    titles = ['Grayscale', 'ROI', 'Edge', 'Equalized', 'GaussianBlur', 'Top Hat',
+    titles = ['Grayscale', 'ROI', 'Edge', 'Equalized', 'Top Hat',
               'Binary', 'rm edge', 'eroded', 'dilated']
-    images = [img, roi, edge, eq, bf, th, b, rm_edge, eroded, dilated]
+    images = [img, roi, edge, eq, th, b, rm_edge, eroded, dilated]
 
-    plt.figure(figsize=(15, 10))
     for i in range(len(images)):
         plt.subplot(2, 5, i + 1)
         plt.imshow(images[i], cmap='gray')
@@ -400,7 +397,6 @@ def v2(img, ps):
 
 
 
-
 if __name__ == '__main__':
     # p1 = np.array([[357, 502], [1192, 552], [1112, 607],
     #                [1012, 682], [932, 747], [852, 832],
@@ -417,7 +413,7 @@ if __name__ == '__main__':
     #                [3010, 5990], [2630, 4310], [2590, 3970],
     #                [2610, 3770], [2650, 3610], [2670, 3530],
     #                [2730, 3410]])
-    image = cv2.imread('/image/new2.png')
+    image = cv2.imread('../new2.png')
 
     # 1 清晰 798
     # image = cv2.imread('photo_20240718_153843.png')

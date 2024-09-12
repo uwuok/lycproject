@@ -7,8 +7,8 @@ def draw_polygon(event, x, y, flags, param):
     global points
     if event == cv2.EVENT_LBUTTONDOWN:
         points.append((x, y))
-    elif event == cv2.EVENT_RBUTTONDOWN:
-        points.clear()
+    # elif event == cv2.EVENT_RBUTTONDOWN:
+    #     points.clear()
 
 def getPolygonROI(img, scale):
     global points
