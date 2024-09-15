@@ -294,6 +294,34 @@ def fft_test():
         print(e)
 
 
+def v4(img, points):
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    enhancer = ImageEnhance.Contrast(Image.fromarray(gray_img))
+    sharp_img = enhancer.enhance(2)  # 銳化系數
+    sharp_img_np = np.array(sharp_img)  # 轉回 NumPy 格式
+    # 10 為弱邊緣，150 為強邊緣
+    edges = cv2.Canny(sharp_img_np, 10, 100, (3, 3), L2gradient=True)
+    cv2.imshow('edges', cv2.resize(edges, None, fx=0.2, fy=0.2))
+    # 邊界跟蹤
+    # contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # # 前景和背景分離
+    # foreground = np.zeros_like(img)
+    # for contour in contours:
+    #     x, y, w, h = cv2.boundingRect(contour)
+    #     if w * h > 10000:  # 選擇前景面積大於 10 的區域
+    #         # cv2.drawContours(foreground, [contour], -1, (255, 255, 255), -1)
+    #         cv2.drawContours(foreground, [contour], -1, (255, 255, 255), thickness=cv2.FILLED)
+    # cv2.imshow('foreground', cv2.resize(foreground, None, fx=0.2, fy=0.2))
+    # res = mask_roi(foreground, points)
+    # cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
+    res = cv2.dilate(edges, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)), iterations=3)
+    res = mask_roi(res, points)
+    cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+    return res
+
+
 def v3(img, points):
     # 轉換為灰度圖像
     gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -309,7 +337,8 @@ def v3(img, points):
     # 二值化
     # _, thresh_img = cv2.threshold(gray_img, 127, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     thresh_img = cv2.adaptiveThreshold(sharp_img_np, 255,
-                                       cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 3, 0)
+                                       cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 9, 0)
+
 
     # 邊界跟蹤
     contours, _ = cv2.findContours(thresh_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -317,10 +346,15 @@ def v3(img, points):
     foreground = np.zeros_like(img)
     for contour in contours:
         x, y, w, h = cv2.boundingRect(contour)
-        if w * h > 80:  # 選擇前景面積大於 10 的區域
-            cv2.drawContours(foreground, [contour], -1, (255, 255, 255), -1)
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    foreground = cv2.dilate(foreground, kernel, iterations=2)
+        if w * h > 10:  # 選擇前景面積大於 10 的區域
+            # cv2.drawContours(foreground, [contour], -1, (255, 255, 255), -1)
+            cv2.drawContours(foreground, [contour], -1, (255, 255, 255), thickness=cv2.FILLED)
+            # cv2.rectangle(foreground, (x, y), (x + w, y + h), (255, 255, 255), -1)
+
+    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    foreground = cv2.erode(foreground, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)), iterations=1)
+    # foreground = cv2.morphologyEx(foreground, cv2.MORPH_OPEN, kernel)
+    foreground = cv2.dilate(foreground, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=11)
     cv2.imshow('foreground', cv2.resize(foreground, None, fx=0.2, fy=0.2))
     res = mask_roi(foreground, points)
     cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
@@ -356,15 +390,15 @@ if __name__ == '__main__':
 
     image = cv2.imread('sample_blur.png')
     roi1, roi2 = get_roi(image)
-    v3(roi1, ms1)
-    v3(roi2, ms2)
+    v4(roi1, ms1)
+    v4(roi2, ms2)
 
     image = cv2.imread('sample.png')
     roi1, roi2 = get_roi(image)
-    v3(roi1, ms1)
-    v3(roi2, ms2)
+    v4(roi1, ms1)
+    v4(roi2, ms2)
 
     image = cv2.imread('new2.png')
     roi1, roi2 = get_roi(image)
-    v3(roi1, ms1)
-    v3(roi2, ms2)
+    v4(roi1, ms1)
+    v4(roi2, ms2)
