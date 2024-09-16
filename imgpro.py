@@ -300,21 +300,21 @@ def v4(img, points):
     sharp_img = enhancer.enhance(2)  # 銳化系數
     sharp_img_np = np.array(sharp_img)  # 轉回 NumPy 格式
     # 10 為弱邊緣，150 為強邊緣
-    edges = cv2.Canny(sharp_img_np, 10, 100, (3, 3), L2gradient=True)
+    edges = cv2.Canny(sharp_img_np, 10, 13, L2gradient=True)
     cv2.imshow('edges', cv2.resize(edges, None, fx=0.2, fy=0.2))
     # 邊界跟蹤
     # contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # # 前景和背景分離
-    # foreground = np.zeros_like(img)
+    # min_area = 5
+    # foreground = np.zeros_like(edges)
     # for contour in contours:
-    #     x, y, w, h = cv2.boundingRect(contour)
-    #     if w * h > 10000:  # 選擇前景面積大於 10 的區域
+    #     area = cv2.contourArea(contour)
+    #     if area >= min_area:
     #         # cv2.drawContours(foreground, [contour], -1, (255, 255, 255), -1)
     #         cv2.drawContours(foreground, [contour], -1, (255, 255, 255), thickness=cv2.FILLED)
     # cv2.imshow('foreground', cv2.resize(foreground, None, fx=0.2, fy=0.2))
     # res = mask_roi(foreground, points)
     # cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
-    res = cv2.dilate(edges, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)), iterations=3)
+    res = cv2.dilate(edges, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=1)
     res = mask_roi(res, points)
     cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
     cv2.waitKey()
@@ -387,6 +387,11 @@ if __name__ == '__main__':
     # cv2.imwrite('2.png', res2)
     # cv2.waitKey()
     # cv2.destroyAllWindows()
+
+    image = cv2.imread('fail.png')
+    roi1, roi2 = get_roi(image)
+    v4(roi1, ms1)
+    v4(roi2, ms2)
 
     image = cv2.imread('sample_blur.png')
     roi1, roi2 = get_roi(image)
