@@ -420,8 +420,8 @@ def test_v4():
     roi1, roi2 = get_roi(image)
     cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
     cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
-    v5(roi1, ms1)
-    v5(roi2, ms2)
+    v4(roi1, ms1)
+    v4(roi2, ms2)
 
 
 def test_v5():
