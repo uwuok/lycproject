@@ -314,12 +314,43 @@ def v4(img, points):
     # cv2.imshow('foreground', cv2.resize(foreground, None, fx=0.2, fy=0.2))
     # res = mask_roi(foreground, points)
     # cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
-    res = cv2.dilate(edges, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=1)
+    res = cv2.dilate(edges, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
     res = mask_roi(res, points)
     cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
     cv2.waitKey()
     cv2.destroyAllWindows()
     return res
+
+
+
+def v5(img, points):
+    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    enhancer = ImageEnhance.Contrast(Image.fromarray(gray_img))
+    sharp_img = enhancer.enhance(2)  # 銳化系數
+    sharp_img_np = np.array(sharp_img)  # 轉回 NumPy 格式
+    # 10 為弱邊緣，150 為強邊緣
+    edges = cv2.Canny(sharp_img_np, 10, 13, L2gradient=True)
+    cv2.imshow('edges', cv2.resize(edges, None, fx=0.2, fy=0.2))
+    # 邊界跟蹤
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    min_area = 0
+    foreground = np.zeros_like(edges)
+    for contour in contours:
+        area = cv2.contourArea(contour)
+        if area > min_area:
+            cv2.drawContours(foreground, [contour], -1, (255, 255, 255), -1)
+            cv2.drawContours(foreground, [contour], -1, (255, 255, 255), thickness=cv2.FILLED)
+    cv2.imshow('foreground', cv2.resize(foreground, None, fx=0.2, fy=0.2))
+    res = mask_roi(foreground, points)
+    cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
+    res = cv2.dilate(edges, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=1)
+    foreground = cv2.dilate(foreground, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
+    foreground = mask_roi(foreground, points)
+    # res = mask_roi(foreground, points)
+    cv2.imshow('res', cv2.resize(foreground, None, fx=0.2, fy=0.2))
+    cv2.waitKey()
+    cv2.destroyAllWindows()
+    return foreground
 
 
 def v3(img, points):
@@ -363,6 +394,65 @@ def v3(img, points):
     return foreground
 
 
+def test_v4():
+    image = cv2.imread('fail.png')
+    roi1, roi2 = get_roi(image)
+    cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    v4(roi1, ms1)
+    v4(roi2, ms2)
+
+    image = cv2.imread('sample_blur.png')
+    roi1, roi2 = get_roi(image)
+    cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    v4(roi1, ms1)
+    v4(roi2, ms2)
+
+    image = cv2.imread('sample.png')
+    roi1, roi2 = get_roi(image)
+    cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    v4(roi1, ms1)
+    v4(roi2, ms2)
+
+    image = cv2.imread('new2.png')
+    roi1, roi2 = get_roi(image)
+    cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    v5(roi1, ms1)
+    v5(roi2, ms2)
+
+
+def test_v5():
+    image = cv2.imread('fail.png')
+    roi1, roi2 = get_roi(image)
+    cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    v5(roi1, ms1)
+    v5(roi2, ms2)
+
+    image = cv2.imread('sample_blur.png')
+    roi1, roi2 = get_roi(image)
+    cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    v5(roi1, ms1)
+    v5(roi2, ms2)
+
+    image = cv2.imread('sample.png')
+    roi1, roi2 = get_roi(image)
+    cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    v5(roi1, ms1)
+    v5(roi2, ms2)
+
+    image = cv2.imread('new2.png')
+    roi1, roi2 = get_roi(image)
+    cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    v5(roi1, ms1)
+    v5(roi2, ms2)
+
 if __name__ == '__main__':
     # image = cv2.imread('sample_blur.png')
     # 整體亮度 117(11)，判斷積屑量過少
@@ -387,23 +477,32 @@ if __name__ == '__main__':
     # cv2.imwrite('2.png', res2)
     # cv2.waitKey()
     # cv2.destroyAllWindows()
-
-    image = cv2.imread('fail.png')
-    roi1, roi2 = get_roi(image)
-    v4(roi1, ms1)
-    v4(roi2, ms2)
-
-    image = cv2.imread('sample_blur.png')
-    roi1, roi2 = get_roi(image)
-    v4(roi1, ms1)
-    v4(roi2, ms2)
-
-    image = cv2.imread('sample.png')
-    roi1, roi2 = get_roi(image)
-    v4(roi1, ms1)
-    v4(roi2, ms2)
-
-    image = cv2.imread('new2.png')
-    roi1, roi2 = get_roi(image)
-    v4(roi1, ms1)
-    v4(roi2, ms2)
+    #
+    # image = cv2.imread('fail.png')
+    # roi1, roi2 = get_roi(image)
+    # cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    # cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    # v5(roi1, ms1)
+    # v5(roi2, ms2)
+    #
+    # image = cv2.imread('sample_blur.png')
+    # roi1, roi2 = get_roi(image)
+    # cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    # cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    # v5(roi1, ms1)
+    # v5(roi2, ms2)
+    #
+    # image = cv2.imread('sample.png')
+    # roi1, roi2 = get_roi(image)
+    # cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    # cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    # v5(roi1, ms1)
+    # v5(roi2, ms2)
+    #
+    # image = cv2.imread('new2.png')
+    # roi1, roi2 = get_roi(image)
+    # cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    # cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    # v5(roi1, ms1)
+    # v5(roi2, ms2)
+    test_v4()
