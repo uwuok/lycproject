@@ -34,8 +34,8 @@ def mask_roi(img, ps):
     black_ratio = black_pixels / roi_area
     #
     print(f"ROI 面積: {roi_area} 像素")
-    print(f"ROI 白色像素： {white_pixels}")
-    print(f"ROI 黑色像素： {black_pixels}")
+    # print(f"ROI 白色像素： {white_pixels}")
+    # print(f"ROI 黑色像素： {black_pixels}")
     print(f"ROI 白色像素比例: {white_ratio:.2%}")
     print(f"ROI 黑色像素比例: {black_ratio:.2%}")
 
@@ -87,55 +87,56 @@ def test_ppt():
 
             # 顯示和保存第一個 ROI
             cv2.imshow('ori_img_1', cv2.resize(roi1, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_ori_img_1.jpg'), cv2.resize(roi1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_ori_img_1.jpg'), cv2.resize(roi1, None, fx=fx, fy=fy))
 
             # 顯示和保存第二個 ROI
             cv2.imshow('ori_img_2', cv2.resize(roi2, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_ori_img_2.jpg'), cv2.resize(roi2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_ori_img_2.jpg'), cv2.resize(roi2, None, fx=fx, fy=fy))
 
             # 灰階處理
             g1 = cv2.cvtColor(roi1, cv2.COLOR_BGR2GRAY)
             g2 = cv2.cvtColor(roi2, cv2.COLOR_BGR2GRAY)
             cv2.imshow('gray_img_1', cv2.resize(g1, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_gray_img_1.jpg'), cv2.resize(g1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_gray_img_1.jpg'), cv2.resize(g1, None, fx=fx, fy=fy))
             cv2.imshow('gray_img_2', cv2.resize(g2, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_gray_img_2.jpg'), cv2.resize(g2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_gray_img_2.jpg'), cv2.resize(g2, None, fx=fx, fy=fy))
 
             # 銳化處理
             s1 = sharp(g1)
             s2 = sharp(g2)
             cv2.imshow('sharp_img_1', cv2.resize(s1, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_sharp_img_1.jpg'), cv2.resize(s1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_sharp_img_1.jpg'), cv2.resize(s1, None, fx=fx, fy=fy))
             cv2.imshow('sharp_img_2', cv2.resize(s2, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_sharp_img_2.jpg'), cv2.resize(s2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_sharp_img_2.jpg'), cv2.resize(s2, None, fx=fx, fy=fy))
 
             # 邊緣檢測
-            e1 = cv2.Canny(s1, 10, 13, L2gradient=True)
-            e2 = cv2.Canny(s2, 10, 13, L2gradient=True)
+            # 15, 28
+            e1 = cv2.Canny(s1, 25, 50, L2gradient=True)
+            e2 = cv2.Canny(s2, 25, 50, L2gradient=True)
             cv2.imshow('edges_1', cv2.resize(e1, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_edges_1.jpg'), cv2.resize(e1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_edges_1.jpg'), cv2.resize(e1, None, fx=fx, fy=fy))
             cv2.imshow('edges_2', cv2.resize(e2, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_edges_2.jpg'), cv2.resize(e2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_edges_2.jpg'), cv2.resize(e2, None, fx=fx, fy=fy))
 
             # 膨脹處理
-            r1 = cv2.dilate(e1, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
-            r2 = cv2.dilate(e2, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
+            r1 = cv2.dilate(e1, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)), iterations=3)
+            r2 = cv2.dilate(e2, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)), iterations=3)
             cv2.imshow('dilate_1', cv2.resize(r1, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_dilate_1.jpg'), cv2.resize(r1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_dilate_1.jpg'), cv2.resize(r1, None, fx=fx, fy=fy))
             cv2.imshow('dilate_2', cv2.resize(r2, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_dilate_2.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_dilate_2.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
 
             # 掩膜處理
             r1 = mask_roi(r1, ms1)
             r2 = mask_roi(r2, ms2)
             cv2.imshow('mask_roi_1', cv2.resize(r1, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_mask_roi_1.jpg'), cv2.resize(r1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_mask_roi_1.jpg'), cv2.resize(r1, None, fx=fx, fy=fy))
             cv2.imshow('mask_roi_2', cv2.resize(r2, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_mask_roi_2.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_mask_roi_2.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
 
             # 等待按鍵和關閉所有視窗
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
+            # cv2.waitKey(0)
+            # cv2.destroyAllWindows()
 
 
 def sharp(image):
