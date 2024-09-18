@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
+import os
 from PIL import Image, ImageEnhance
-import matplotlib.pyplot as plt
-from skimage.feature import local_binary_pattern
 
 ms1 = np.array([[7, 38], [69, 207], [146, 376], [176, 438], [253, 546],
                 [330, 653], [376, 730], [438, 807], [484, 869], [546, 930],
@@ -17,31 +16,6 @@ ms2 = np.array([[0, 0], [538, 0], [894, 74], [798, 134],
                 [294, 674], [254, 758], [210, 842], [182, 910],
                 [158, 982], [134, 1078], [130, 1114], [22, 1114],
                 [0, 974]])
-
-
-# ms2 = np.array([[0, 0], [950, 60], [882, 104], [818, 144], [734, 196],
-#                 [674, 244], [598, 308], [530, 380], [458, 460], [410, 520],
-#                 [358, 592], [326, 644], [282, 716], [250, 780], [230, 828],
-#                 [202, 892], [182, 936], [162, 1000], [154, 1040], [138, 1096],
-#                 [134, 1116], [78, 1116]])
-
-
-def calculate_pixels(img, ps):
-    mask_shape = img.shape[:2]
-    mask = np.zeros(mask_shape, dtype=np.uint8)
-    cv2.fillPoly(mask, [ps], 255)
-
-    roi_area = np.count_nonzero(mask)
-    white_pixels = cv2.countNonZero(img)
-    black_pixels = roi_area - white_pixels
-    white_ratio = white_pixels // roi_area
-    black_ratio = black_pixels // roi_area
-
-    print(f"ROI 面積: {roi_area} 像素")
-    print(f"ROI 白色像素： {white_pixels}")
-    print(f"ROI 黑色像素： {black_pixels}")
-    print(f"ROI 白色像素比例: {white_ratio:.2%}")
-    print(f"ROI 黑色像素比例: {black_ratio:.2%}")
 
 
 def mask_roi(img, ps):
@@ -92,206 +66,84 @@ def get_roi(image):
     return roi1, roi2
 
 
-def image_processed(image):
-    # 讀取原始圖像
-    # image = cv2.imread(r"C:\Users\User\Desktop\roi_output2.jpg")
-    # image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    # 高斯模糊 (降噪)
-    blurred_image = cv2.GaussianBlur(image, (7, 7), 0)
-    # cv2.imshow('blurred_image', cv2.resize(blurred_image, None, fx=0.2, fy=0.2))
-    # 銳化處理 (利用 PIL 提升對比度)
-    enhancer = ImageEnhance.Contrast(Image.fromarray(blurred_image))
-    sharp_img = enhancer.enhance(2)  # 銳化系數
-    sharp_img_np = np.array(sharp_img)  # 轉回 NumPy 格式
-    # cv2.imshow('sharp_img.png', cv2.resize(sharp_img_np, None, fx=0.2, fy=0.2))
-    # 限制對比度自適應直方圖均衡化
-    gray_img = cv2.cvtColor(sharp_img_np, cv2.COLOR_BGR2GRAY)
-    # cv2.imshow('gray', cv2.resize(gray_img, None, fx=0.2, fy=0.2))
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(3, 3))
-    clahe_img = clahe.apply(gray_img)
-    # cv2.imshow('clahe', cv2.resize(clahe_img, None, fx=0.2, fy=0.2))
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
-    tophat_img = cv2.morphologyEx(clahe_img, cv2.MORPH_TOPHAT, kernel)
-    # cv2.imshow('top hat', cv2.resize(tophat_img, None, fx=0.2, fy=0.2))
-    threshold = cv2.adaptiveThreshold(tophat_img, 255,
-                                      cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 3, -8)
-    # cv2.imshow('adaptive threshold', cv2.resize(threshold, None, fx=0.2, fy=0.2))
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    # er = cv2.erode(threshold, cv2.getStructuringElement(cv2.MORPH_RECT, (1, 1)), iterations=1)
-    re = cv2.dilate(threshold, kernel, iterations=7)
-    # cv2.imshow('dilate', cv2.resize(re, None, fx=0.2, fy=0.2))
-    opening = cv2.morphologyEx(re, cv2.MORPH_OPEN, kernel, iterations=2)
-    # cv2.imshow('opening', cv2.resize(opening, None, fx=0.2, fy=0.2))
-    # plt.subplot(1, 5, 1)
-    # plt.imshow(image_rgb)
-    # plt.title('Original Image')
-    # plt.axis('off')
-    # plt.subplot(1, 5, 2)
-    # plt.imshow(clahe_img, cmap='gray')
-    # plt.title('CLAHE Image')
-    # plt.axis('off')
-    # plt.subplot(1, 5, 3)
-    # plt.imshow(tophat_img, cmap='gray')
-    # plt.title('Top-hat Image')
-    # plt.axis('off')
-    # plt.subplot(1, 5, 4)
-    # plt.imshow(threshold, cmap='gray')
-    # plt.title('thr')
-    # plt.axis('off')
-    # plt.subplot(1, 5, 5)
-    # plt.imshow(opening, cmap='gray')
-    # plt.title('re')
-    # plt.axis('off')
-    # plt.tight_layout()
-    # plt.show()
-    cv2.waitKey()
-    cv2.destroyAllWindows()
-    return opening
+def test_ppt():
+    cnt = 0
+    current_path = os.getcwd()  # 獲取當前資料夾路徑
+    files = os.listdir(current_path)
+    image_extensions = ('.jpg', '.png', '.jpeg', '.bmp')
+
+    for file in files:
+        if file.lower().endswith(image_extensions):
+            cnt += 1
+            print(f'已處理圖片數：{cnt}')
+            print(f'當前圖片名稱：{file}')
+            current_img = cv2.imread(file, cv2.IMREAD_UNCHANGED)
+            roi1, roi2 = get_roi(current_img)  # 獲取兩個 ROI 區域
+
+            # 創建每張圖片的唯一保存名稱，防止名稱重複
+            base_filename = os.path.splitext(file)[0]
+
+            fx, fy = 0.2, 0.2
+
+            # 顯示和保存第一個 ROI
+            cv2.imshow('ori_img_1', cv2.resize(roi1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_ori_img_1.jpg'), cv2.resize(roi1, None, fx=fx, fy=fy))
+
+            # 顯示和保存第二個 ROI
+            cv2.imshow('ori_img_2', cv2.resize(roi2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_ori_img_2.jpg'), cv2.resize(roi2, None, fx=fx, fy=fy))
+
+            # 灰階處理
+            g1 = cv2.cvtColor(roi1, cv2.COLOR_BGR2GRAY)
+            g2 = cv2.cvtColor(roi2, cv2.COLOR_BGR2GRAY)
+            cv2.imshow('gray_img_1', cv2.resize(g1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_gray_img_1.jpg'), cv2.resize(g1, None, fx=fx, fy=fy))
+            cv2.imshow('gray_img_2', cv2.resize(g2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_gray_img_2.jpg'), cv2.resize(g2, None, fx=fx, fy=fy))
+
+            # 銳化處理
+            s1 = sharp(g1)
+            s2 = sharp(g2)
+            cv2.imshow('sharp_img_1', cv2.resize(s1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_sharp_img_1.jpg'), cv2.resize(s1, None, fx=fx, fy=fy))
+            cv2.imshow('sharp_img_2', cv2.resize(s2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_sharp_img_2.jpg'), cv2.resize(s2, None, fx=fx, fy=fy))
+
+            # 邊緣檢測
+            e1 = cv2.Canny(s1, 10, 13, L2gradient=True)
+            e2 = cv2.Canny(s2, 10, 13, L2gradient=True)
+            cv2.imshow('edges_1', cv2.resize(e1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_edges_1.jpg'), cv2.resize(e1, None, fx=fx, fy=fy))
+            cv2.imshow('edges_2', cv2.resize(e2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_edges_2.jpg'), cv2.resize(e2, None, fx=fx, fy=fy))
+
+            # 膨脹處理
+            r1 = cv2.dilate(e1, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
+            r2 = cv2.dilate(e2, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
+            cv2.imshow('dilate_1', cv2.resize(r1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_dilate_1.jpg'), cv2.resize(r1, None, fx=fx, fy=fy))
+            cv2.imshow('dilate_2', cv2.resize(r2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_dilate_2.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
+
+            # 掩膜處理
+            r1 = mask_roi(r1, ms1)
+            r2 = mask_roi(r2, ms2)
+            cv2.imshow('mask_roi_1', cv2.resize(r1, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_mask_roi_1.jpg'), cv2.resize(r1, None, fx=fx, fy=fy))
+            cv2.imshow('mask_roi_2', cv2.resize(r2, None, fx=fx, fy=fy))
+            cv2.imwrite(os.path.join(current_path, f'{base_filename}_mask_roi_2.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
+
+            # 等待按鍵和關閉所有視窗
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
 
 
-def v2(image):
-    # 銳化處理 (利用 PIL 提升對比度)
+
+def sharp(image):
     enhancer = ImageEnhance.Contrast(Image.fromarray(image))
-    sharp_img = enhancer.enhance(3)  # 銳化系數
-    sharp_img_np = np.array(sharp_img)  # 轉回 NumPy 格式
-    # 灰階
-    gray = cv2.cvtColor(sharp_img_np, cv2.COLOR_BGR2GRAY)
-    # 二值化
-    # b = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 77, -1)
-    # b = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 77, -1)
-    # b = cv2.bitwise_not(b)
-
-    return gray
-
-
-# 定義 LBP 函數
-def lbp_image(image, P=11, R=3, method='default'):
-    """
-    計算圖像的 LBP 特徵圖。
-
-    :param image: 灰度圖像
-    :param P: 用於 LBP 計算的圓形對稱鄰域的像素數量
-    :param R: 鄰域的半徑
-    :param method: LBP 方法，'default', 'ror', 'uniform', 'var'
-    :return: LBP 特徵圖
-    """
-    if len(image) == 3:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    lbp = local_binary_pattern(image, P, R, method=method)
-    _, lbp = cv2.threshold(lbp, 127, 255, cv2.THRESH_BINARY)
-    return lbp
-
-
-def lbp_test():
-    image = cv2.imread('sample_blur.png')
-    # 整體亮度 117(11)，判斷積屑量過少
-    # image = cv2.imread('photo_20240718_154734.png')
-
-    # 整體亮度低 9，判斷積屑量 OK
-    # image = cv2.imread('photo_20240718_162814.png')
-    # 整體亮度高 18，判斷積屑量過多
-    # image = cv2.imread('photo_20240718_153508.png')
-
-    roi1, roi2 = get_roi(image)
-
-    lbp1 = lbp_image(v2(roi1))
-    lbp2 = lbp_image(v2(roi2))
-    cv2.imshow('lbp1', cv2.resize(lbp1, None, fx=0.2, fy=0.2))
-    cv2.imshow('lbp2', cv2.resize(lbp2, None, fx=0.2, fy=0.2))
-
-    lbp1 = cv2.bitwise_not(lbp1)
-    lbp2 = cv2.bitwise_not(lbp2)
-    cv2.imshow('bit not1', cv2.resize(lbp1, None, fx=0.2, fy=0.2))
-    cv2.imshow('bit not2', cv2.resize(lbp2, None, fx=0.2, fy=0.2))
-
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    d1 = cv2.dilate(lbp1, kernel, iterations=5)
-    d2 = cv2.dilate(lbp2, kernel, iterations=5)
-    res1 = mask_roi(d1, ms1)
-    res2 = mask_roi(d2, ms2)
-
-    cv2.imshow('res1', cv2.resize(res1, None, fx=0.2, fy=0.2))
-    cv2.imshow('res2', cv2.resize(res2, None, fx=0.2, fy=0.2))
-
-
-def binarize_foreground(foreground, threshold=25):  # 閾值可調整
-    """
-    將前景圖像二值化
-
-    Args:
-        foreground: 前景圖像 (灰度圖像)
-        threshold: 閾值，用於區分前景和背景
-
-    Returns:
-        binary_foreground: 二值化前景圖像
-    """
-
-    # 使用閾值分割前景和背景
-    _, binary_foreground = cv2.threshold(foreground.astype(np.uint8), threshold, 255, cv2.THRESH_BINARY)
-
-    return binary_foreground
-
-
-def foreground_background_separation(image, low_pass_radius=30):
-    """
-    使用傅立葉變換進行前景背景分離
-
-    Args:
-        image_path: 圖像路徑
-        low_pass_radius: 低通濾波器的半徑，用於控制保留的低頻信息量
-
-    Returns:
-        foreground: 分離出的前景圖像
-        background: 分離出的背景圖像
-    """
-    # 1. 讀取圖像並轉換為灰度圖像
-    img = cv2.cvtColor(image, cv2.COLOR_BGRA2GRAY)
-
-    # 2. 計算傅立葉變換
-    f = np.fft.fft2(img)
-    f_shifted = np.fft.fftshift(f)
-
-    # 3. 創建低通濾波器掩碼
-    rows, cols = img.shape
-    crow, ccol = rows // 2, cols // 2
-    mask = np.zeros((rows, cols), np.uint8)
-    mask[crow - low_pass_radius:crow + low_pass_radius, ccol - low_pass_radius:ccol + low_pass_radius] = 1
-
-    # 4. 應用低通濾波器
-    f_shifted_filtered = f_shifted * mask
-
-    # 5. 計算反傅立葉變換得到背景圖像
-    f_filtered = np.fft.ifftshift(f_shifted_filtered)
-    background = np.fft.ifft2(f_filtered).real  # 取實部
-
-    # 6. 從原始圖像中減去背景圖像得到前景圖像
-    foreground = img - background
-
-    # 7. 可選：顯示結果
-    # plt.figure(figsize=(12, 4))
-    # plt.subplot(131), plt.imshow(img, cmap='gray'), plt.title('Original Image')
-    # plt.subplot(132), plt.imshow(background, cmap='gray'), plt.title('Background')
-    # plt.subplot(133), plt.imshow(foreground, cmap='gray'), plt.title('Foreground')
-    # plt.show()
-
-    return foreground, background
-
-
-def fft_test():
-    image = cv2.imread("sample_blur.png")  # 替換為你的圖像路徑
-    roi1, roi2 = get_roi(image)
-
-    try:
-        foreground, background = foreground_background_separation(roi1, low_pass_radius=40)
-        print("前景背景分離完成")
-        binary_foreground = binarize_foreground(foreground, threshold=254)
-        plt.figure(figsize=(12, 4))
-        plt.subplot(131), plt.imshow(foreground, cmap='gray'), plt.title('Original Foreground')
-        plt.subplot(132), plt.imshow(binary_foreground, cmap='gray'), plt.title('Binarized Foreground')
-        plt.subplot(133), plt.imshow(roi1, cmap='gray'), plt.title('origin')
-        plt.show()
-    except FileNotFoundError as e:
-        print(e)
+    sharp_img = enhancer.enhance(2)
+    sharp_img_np = np.array(sharp_img)
+    return sharp_img_np
 
 
 def v4(img, points):
@@ -301,7 +153,7 @@ def v4(img, points):
     sharp_img_np = np.array(sharp_img)  # 轉回 NumPy 格式
     # 10 為弱邊緣，150 為強邊緣
     edges = cv2.Canny(sharp_img_np, 10, 13, L2gradient=True)
-    cv2.imshow('edges', cv2.resize(edges, None, fx=0.2, fy=0.2))
+    # cv2.imshow('edges', cv2.resize(edges, None, fx=0.2, fy=0.2))
     # 邊界跟蹤
     # contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # min_area = 5
@@ -316,11 +168,10 @@ def v4(img, points):
     # cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
     res = cv2.dilate(edges, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
     res = mask_roi(res, points)
-    cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
+    # cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
     cv2.waitKey()
     cv2.destroyAllWindows()
     return res
-
 
 
 def v5(img, points):
@@ -348,47 +199,6 @@ def v5(img, points):
     foreground = mask_roi(foreground, points)
     # res = mask_roi(foreground, points)
     cv2.imshow('res', cv2.resize(foreground, None, fx=0.2, fy=0.2))
-    cv2.waitKey()
-    cv2.destroyAllWindows()
-    return foreground
-
-
-def v3(img, points):
-    # 轉換為灰度圖像
-    gray_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    enhancer = ImageEnhance.Contrast(Image.fromarray(gray_img))
-    sharp_img = enhancer.enhance(2)  # 銳化系數
-    sharp_img_np = np.array(sharp_img)  # 轉回 NumPy 格式
-
-    # clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(11, 11))
-    # clahe_img = clahe.apply(gray_img)
-    # 高斯濾波
-    # gray_img = cv2.GaussianBlur(gray_img, (5, 5), 0)
-
-    # 二值化
-    # _, thresh_img = cv2.threshold(gray_img, 127, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    thresh_img = cv2.adaptiveThreshold(sharp_img_np, 255,
-                                       cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 9, 0)
-
-
-    # 邊界跟蹤
-    contours, _ = cv2.findContours(thresh_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # 前景和背景分離
-    foreground = np.zeros_like(img)
-    for contour in contours:
-        x, y, w, h = cv2.boundingRect(contour)
-        if w * h > 10:  # 選擇前景面積大於 10 的區域
-            # cv2.drawContours(foreground, [contour], -1, (255, 255, 255), -1)
-            cv2.drawContours(foreground, [contour], -1, (255, 255, 255), thickness=cv2.FILLED)
-            # cv2.rectangle(foreground, (x, y), (x + w, y + h), (255, 255, 255), -1)
-
-    # kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
-    foreground = cv2.erode(foreground, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)), iterations=1)
-    # foreground = cv2.morphologyEx(foreground, cv2.MORPH_OPEN, kernel)
-    foreground = cv2.dilate(foreground, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=11)
-    cv2.imshow('foreground', cv2.resize(foreground, None, fx=0.2, fy=0.2))
-    res = mask_roi(foreground, points)
-    cv2.imshow('res', cv2.resize(res, None, fx=0.2, fy=0.2))
     cv2.waitKey()
     cv2.destroyAllWindows()
     return foreground
@@ -453,56 +263,6 @@ def test_v5():
     v5(roi1, ms1)
     v5(roi2, ms2)
 
+
 if __name__ == '__main__':
-    # image = cv2.imread('sample_blur.png')
-    # 整體亮度 117(11)，判斷積屑量過少
-    # image = cv2.imread('photo_20240718_154734.png')
-
-    # 整體亮度低 9，判斷積屑量 OK
-    # image = cv2.imread('photo_20240718_162814.png')
-    # 整體亮度高 18，判斷積屑量過多
-    # image = cv2.imread('photo_20240718_153508.png')
-
-    # roi1, roi2 = get_roi(image)
-
-    # proc_roi1 = v2(roi1)
-    # proc_roi2 = v2(roi2)
-    # cv2.imshow('proc_roi1', cv2.resize(proc_roi1, None, fx=0.2, fy=0.2))
-    # cv2.imshow('proc_roi2', cv2.resize(proc_roi2, None, fx=0.2, fy=0.2))
-    # res1 = mask_roi(proc_roi1, ms1)
-    # res2 = mask_roi(proc_roi2, ms2)
-    # cv2.imshow('1', cv2.resize(res1, None, fx=0.2, fy=0.2))
-    # cv2.imshow('2', cv2.resize(res2, None, fx=0.2, fy=0.2))
-    # cv2.imwrite('1.png', res1)
-    # cv2.imwrite('2.png', res2)
-    # cv2.waitKey()
-    # cv2.destroyAllWindows()
-    #
-    # image = cv2.imread('fail.png')
-    # roi1, roi2 = get_roi(image)
-    # cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
-    # cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
-    # v5(roi1, ms1)
-    # v5(roi2, ms2)
-    #
-    # image = cv2.imread('sample_blur.png')
-    # roi1, roi2 = get_roi(image)
-    # cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
-    # cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
-    # v5(roi1, ms1)
-    # v5(roi2, ms2)
-    #
-    # image = cv2.imread('sample.png')
-    # roi1, roi2 = get_roi(image)
-    # cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
-    # cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
-    # v5(roi1, ms1)
-    # v5(roi2, ms2)
-    #
-    # image = cv2.imread('new2.png')
-    # roi1, roi2 = get_roi(image)
-    # cv2.imshow('ori_roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
-    # cv2.imshow('ori_roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
-    # v5(roi1, ms1)
-    # v5(roi2, ms2)
-    test_v4()
+    test_ppt()
