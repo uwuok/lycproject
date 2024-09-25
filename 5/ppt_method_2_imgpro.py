@@ -1,7 +1,16 @@
+from collections import defaultdict
+
 import cv2
 import numpy as np
 import os
 from PIL import Image, ImageEnhance
+
+low = 0
+high = 0.21
+# key = white_ratio 取整, value = file name
+success, fail = defaultdict(list), defaultdict(list)
+success_cnt, fail_cnt = defaultdict(int), defaultdict(int)
+success_total, fail_total = 0, 0
 
 ms1 = np.array([[7, 38], [69, 207], [146, 376], [176, 438], [253, 546],
                 [330, 653], [376, 730], [438, 807], [484, 869], [546, 930],
@@ -16,6 +25,30 @@ ms2 = np.array([[0, 0], [538, 0], [894, 74], [798, 134],
                 [294, 674], [254, 758], [210, 842], [182, 910],
                 [158, 982], [134, 1078], [130, 1114], [22, 1114],
                 [0, 974]])
+
+
+def cal_ratio(file_name, roi_img, ps):
+    global success, fail, success_cnt, fail_cnt, success_total, fail_total
+    mask_shape = roi_img.shape[:2]
+    mask = np.zeros(mask_shape, dtype=np.uint8)
+    cv2.fillPoly(mask, [ps], 255)
+    roi_area = np.count_nonzero(mask)
+    white_ratio = np.count_nonzero(roi_img) / roi_area
+    # print(f"ROI 面積: {roi_area} 像素")
+    # print(f"ROI 白色像素比例: {white_ratio:.2%}")
+
+    ratio = int(white_ratio * 100)
+    if low <= white_ratio < high:
+        success[ratio].append(file_name)
+        success_cnt[ratio] = success_cnt.get(ratio, 0) + 1
+        success_total += 1
+        return True
+    else:
+        fail[ratio].append(file_name)
+        fail_cnt[ratio] = success_cnt.get(ratio, 0) + 1
+        fail_total += 1
+        return False
+
 
 
 def mask_roi(img, ps):
@@ -61,10 +94,11 @@ def get_roi(image):
 
 def test_ppt():
     cnt = 0
-    current_path = os.getcwd()  # 獲取當前資料夾路徑
+    current_path = os.path.dirname(os.path.abspath(__file__))  # 獲取當前資料夾路徑
+    os.chdir(current_path)
     files = os.listdir(current_path)
     image_extensions = ('.jpg', '.png', '.jpeg', '.bmp')
-
+    print(current_path)
     for file in files:
         if file.lower().endswith(image_extensions):
             cnt += 1
@@ -127,9 +161,12 @@ def test_ppt():
             # cv2.imshow('mask_roi_2', cv2.resize(r2, None, fx=fx, fy=fy))
             # cv2.imwrite(os.path.join(current_path, f'{base_filename}_mask_roi_2.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
 
+            cal_ratio(file, r1, ms1)
+
             # 等待按鍵和關閉所有視窗
             # cv2.waitKey(0)
             # cv2.destroyAllWindows()
+
 
 
 def sharp(image):
@@ -141,3 +178,26 @@ def sharp(image):
 
 if __name__ == '__main__':
     test_ppt()
+    print(f'判定正確張數(量級, 圖片名稱)：{success_total}\n')
+    for k in sorted(success):
+        print(k, success[k])
+
+    print()
+
+    print(f'判定正確張數(量級, 圖片數量)：{success_total}')
+    for k in sorted(success_cnt):
+        print(k, success_cnt[k])
+
+    print('------------------------------')
+
+    print(f'判定失敗張數(量級, 圖片名稱)：{fail_total}\n')
+    for k in sorted(fail):
+        print(k, fail[k])
+
+    print()
+
+    print(f'判定正確張數(量級, 圖片數量)：{fail_total}')
+    for k in sorted(fail_cnt):
+        print(k, fail_cnt[k])
+
+    os.system('pause')
