@@ -3,7 +3,8 @@ import schedule
 import time
 import threading
 from datetime import datetime
-import keyboard
+# import keyboard
+import imgpro
 
 # 初始化相機
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
@@ -24,7 +25,7 @@ def take_picture():
 
         # 開啟一個新執行緒來保存圖片
         threading.Thread(target=cv2.imwrite, args=(filename, frame)).start()
-
+        threading.Thread(target=imgpro.proc_0919, args=(frame, timestamp)).start()
         global cnt
         cnt += 1
         print(f"已拍攝照片並保存為： {filename} [{cnt}]")

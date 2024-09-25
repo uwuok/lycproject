@@ -25,6 +25,10 @@ def mask_roi(img, ps):
     # cv2.imshow('mask', cv2.resize(mask, None, fx=0.2, fy=0.2))
     # cv2.waitKey()
     roi_area = np.count_nonzero(mask)
+    # print(f'Mask 白色像素點個數：{roi_area}')
+    # print(f'Mask 黑色像素點個數：{mask.size - roi_area}')
+    # print(f'Mask 白色像素點占比：{(roi_area / mask.size):.2%}')
+    # print(f'Mask 黑色像素點占比：{(mask.size - roi_area) / mask.size:.2%}')
     roi = cv2.bitwise_and(img, img, mask=mask)
     if len(roi.shape) > 2:
         roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
@@ -264,5 +268,74 @@ def test_v5():
     v5(roi2, ms2)
 
 
+def proc_0919(img, timestamp):
+    current_img = img
+    roi1, roi2 = get_roi(current_img)  # 獲取兩個 ROI 區域
+    fx, fy = 0.2, 0.2
+
+    # 灰階處理
+    g1, g2 = roi1, roi2
+    if len(roi1) == 3:
+        g1 = cv2.cvtColor(roi1, cv2.COLOR_BGR2GRAY)
+    if len(roi2) == 3:
+        g2 = cv2.cvtColor(roi2, cv2.COLOR_BGR2GRAY)
+
+    # 銳化處理
+    s1 = sharp(g1)
+    s2 = sharp(g2)
+
+    # 邊緣檢測
+    e1 = cv2.Canny(s1, 10, 13, L2gradient=True)
+    e2 = cv2.Canny(s2, 10, 13, L2gradient=True)
+
+    # 膨脹處理
+    r1 = cv2.dilate(e1, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
+    r2 = cv2.dilate(e2, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
+
+    # 掩膜處理
+
+    r1 = mask_roi(r1, ms1)
+    r2 = mask_roi(r2, ms2)
+    f1 = f"{os.getcwd()}/photo_{timestamp}_1.png"
+    f2 = f"{os.getcwd()}/photo_{timestamp}_2.png"
+    cv2.imwrite(f1, r1)
+    cv2.imwrite(f2, r2)
+    print(f"已保存 ROI1 為： {f1}")
+    print(f"已保存 ROI2 為： {f2}")
+    return r1, r2
+
+
 if __name__ == '__main__':
-    test_ppt()
+    # test_ppt()
+    # print('456')
+    current_img = cv2.imread('new.png', cv2.IMREAD_UNCHANGED)
+    roi1, roi2 = get_roi(current_img)  # 獲取兩個 ROI 區域
+
+    cv2.imwrite('ppppp1.png', roi1)
+    cv2.imwrite('ppppp2.png', roi2)
+
+    fx, fy = 0.2, 0.2
+
+    # 灰階處理
+    g1, g2 = roi1, roi2
+    if len(roi1) == 3:
+        g1 = cv2.cvtColor(roi1, cv2.COLOR_BGR2GRAY)
+    if len(roi2) == 3:
+        g2 = cv2.cvtColor(roi2, cv2.COLOR_BGR2GRAY)
+
+    # 銳化處理
+    s1 = sharp(g1)
+    s2 = sharp(g2)
+
+    # 邊緣檢測
+    e1 = cv2.Canny(s1, 10, 13, L2gradient=True)
+    e2 = cv2.Canny(s2, 10, 13, L2gradient=True)
+
+    # 膨脹處理
+    r1 = cv2.dilate(e1, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
+    r2 = cv2.dilate(e2, cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)), iterations=3)
+
+    # 掩膜處理
+
+    r1 = mask_roi(r1, ms1)
+    r2 = mask_roi(r2, ms2)

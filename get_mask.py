@@ -39,12 +39,13 @@ def getPolygonROI(img, scale):
     # 将选取的多边形坐标放大回原始尺寸
     scaled_points = [(int(x / scale), int(y / scale)) for x, y in points]
     scaled_points = np.array(scaled_points, dtype=np.int32)  # 确保转换为 NumPy 数组
-
+    print(points)
+    print([np.array(points)])
     print(scaled_points)
     return scaled_points
 
 if __name__ == '__main__':
-    img = cv2.imread(r'roi_output_2.jpg', cv2.IMREAD_UNCHANGED)
+    img = cv2.imread(r'ppppp2.png', cv2.IMREAD_UNCHANGED)
 
     # 创建黑色遮罩
     mask_shape = img.shape[:2]

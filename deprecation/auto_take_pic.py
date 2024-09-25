@@ -23,6 +23,7 @@ def list_cameras():
         index += 1
     return arr
 
+import imgpro.py
 
 def take_picture():
     # cap = cv2.VideoCapture(0, cv2.CAP_MSMF)
