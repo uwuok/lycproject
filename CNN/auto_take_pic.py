@@ -1,14 +1,11 @@
+import os.path
 import cv2
 import schedule
 import time
 import threading
 from datetime import datetime
 # import keyboard
-import imgpro
-import os
-
-current_path = os.path.dirname(os.path.abspath(__file__))
-os.chdir(current_path)
+import img_pre_proc
 
 # 初始化相機
 cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
@@ -16,6 +13,8 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 8000)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 6000)
 cnt = 0
 stop_flag = False  # 全局停止旗標
+current_path = os.path.dirname(os.path.abspath(__file__))
+os.chdir(current_path)
 
 def take_picture():
     if not cap.isOpened() or stop_flag:
@@ -29,7 +28,7 @@ def take_picture():
 
         # 開啟一個新執行緒來保存圖片
         threading.Thread(target=cv2.imwrite, args=(filename, frame)).start()
-        threading.Thread(target=imgpro.proc_0919, args=(frame, timestamp)).start()
+        threading.Thread(target=img_pre_proc.pre_proc, args=(frame, timestamp)).start()
         global cnt
         cnt += 1
         print(f"已拍攝照片並保存為： {filename} [{cnt}]")

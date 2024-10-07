@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-image = cv2.imread('photo_20240718_153843.png')
+image = cv2.imread('../photo_20240718_153843.png')
 pts1 = np.array([[560, 2539], [1550, 2504], [
     2053, 5699], [880, 5982]], np.int32)
 

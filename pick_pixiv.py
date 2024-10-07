@@ -2,7 +2,7 @@ import cv2
 
 WIN_NAME = 'pick_points'
 # IMAGE_FILE = '../opencv/color.jpg'
-IMAGE_FILE = '../image/new.png'
+IMAGE_FILE = '/new.png'
 
 
 def pick_points(event, x, y, flags, param):
