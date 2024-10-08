@@ -1,0 +1,11 @@
+# 應該為量級一 (0)
+Prediction (1,): photo_20240718_162100_1.jpg, photo_20240718_162428_1.jpg, photo_20240718_164941_1.jpg
+# 應該為量級二 (1)
+Prediction (0,): photo_20240718_164749_1.jpg, photo_20240718_164817_1.jpg
+# 應該為量級三 (2)
+Prediction (1,): photo_20240628_111231_1.jpg
+Prediction (3,): photo_20240628_111345_1.jpg
+Prediction (4,): photo_20240628_113535_1.jpg
+# 應該為量級四 (3)
+# 應該為量級五 (4)
+Prediction (3,): photo_20240628_104022_1.jpg

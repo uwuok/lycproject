@@ -43,9 +43,16 @@ def get_roi(image):
     return roi1, roi2
 
 
-def pre_proc(img):
+def pre_proc(img, timestamp):
     current_img = img
     roi1, roi2 = get_roi(current_img)  # 獲取兩個 ROI 區域
+
+    filename = rf"r1\photo_{timestamp}_1.png"
+    cv2.imwrite(filename, roi1)
+
+    filename = rf"r2\photo_{timestamp}_2.png"
+    cv2.imwrite(filename, roi2)
+
     fx, fy = 0.1, 0.1
 
     # 灰階處理
@@ -59,11 +66,4 @@ def pre_proc(img):
     r1 = mask_roi(g1, ms1)
     r2 = mask_roi(g2, ms2)
     r1 = cv2.resize(r1, None, fx=fx, fy=fy)
-    # r2 = cv2.resize(r1, None, fx=0.1, fy=0.1)
-    # f1 = f"{os.getcwd()}/photo_{timestamp}_1.png"
-    # f2 = f"{os.getcwd()}/photo_{timestamp}_2.png"
-    # cv2.imwrite(f1, r1)
-    # cv2.imwrite(f2, r2)
-    # print(f"已保存 ROI1 為： {f1}")
-    # print(f"已保存 ROI2 為： {f2}")
     return r1, r2
