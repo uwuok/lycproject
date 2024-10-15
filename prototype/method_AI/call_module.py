@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 
-def predict_r1(img, tag=''):
+def predict(img, tag=''):
     current_path = os.path.dirname(os.path.abspath(__file__))
     os.chdir(current_path)
 
@@ -21,5 +21,5 @@ def predict_r1(img, tag=''):
     predictions = model.predict(img_array)
     predicted_class = np.argmax(predictions, axis=1)
     print(predictions)
-    print(f'{tag} Predicted class:{predicted_class}')
+    print(f'{tag} Predicted class:{predicted_class[0] + 1}')
     return predicted_class[0] + 1

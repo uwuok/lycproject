@@ -148,16 +148,16 @@ def test_ppt():
             # 膨脹處理
             r1 = cv2.dilate(e1, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)), iterations=3)
             r2 = cv2.dilate(e2, cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5)), iterations=3)
-            # cv2.imshow('dilate_1', cv2.resize(r1, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_dilate_1.jpg'), cv2.resize(r1, None, fx=fx, fy=fy))
+            # cv2.imshow('dilate_1', cv2.resize(r2, None, fx=fx, fy=fy))
+            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_dilate_1.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
             # cv2.imshow('dilate_2', cv2.resize(r2, None, fx=fx, fy=fy))
             # cv2.imwrite(os.path.join(current_path, f'{base_filename}_dilate_2.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
 
             # 掩膜處理
             r1 = mask_roi(r1, ms1)
             r2 = mask_roi(r2, ms2)
-            # cv2.imshow('mask_roi_1', cv2.resize(r1, None, fx=fx, fy=fy))
-            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_mask_roi_1.jpg'), cv2.resize(r1, None, fx=fx, fy=fy))
+            # cv2.imshow('mask_roi_1', cv2.resize(r2, None, fx=fx, fy=fy))
+            # cv2.imwrite(os.path.join(current_path, f'{base_filename}_mask_roi_1.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
             # cv2.imshow('mask_roi_2', cv2.resize(r2, None, fx=fx, fy=fy))
             # cv2.imwrite(os.path.join(current_path, f'{base_filename}_mask_roi_2.jpg'), cv2.resize(r2, None, fx=fx, fy=fy))
 

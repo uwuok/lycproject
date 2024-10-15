@@ -1,9 +1,9 @@
 {
     "Cncip": "192.168.1.200",
     "Cncport": "8192",
-    "Flusher_level_bar": 0.0,
+    "Flusher_level_bar": 0.07732764117123403,
     "Excluder_level_bar": 0.0,
-    "Flusher_level": 4,
+    "Flusher_level": 1,
     "FlusherLevels": [
         "41",
         "50",
@@ -60,4 +60,6 @@
         "55",
         "65"
     ],
-    "Flusher_level_bar_R1": 
+    "Flusher_level_bar_R1": -1,
+    "Flusher_level_bar_R2": 0
+}

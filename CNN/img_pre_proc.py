@@ -59,10 +59,10 @@ def pre_proc(img):
     r1 = mask_roi(g1, ms1)
     r2 = mask_roi(g2, ms2)
     r1 = cv2.resize(r1, None, fx=fx, fy=fy)
-    # r2 = cv2.resize(r1, None, fx=0.1, fy=0.1)
+    # r2 = cv2.resize(r2, None, fx=0.1, fy=0.1)
     # f1 = f"{os.getcwd()}/photo_{timestamp}_1.png"
     # f2 = f"{os.getcwd()}/photo_{timestamp}_2.png"
-    # cv2.imwrite(f1, r1)
+    # cv2.imwrite(f1, r2)
     # cv2.imwrite(f2, r2)
     # print(f"已保存 ROI1 為： {f1}")
     # print(f"已保存 ROI2 為： {f2}")

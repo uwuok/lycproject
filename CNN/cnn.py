@@ -43,11 +43,14 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
     tf.keras.layers.Conv2D(128, (3, 3), activation='relu'),
     tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
-    tf.keras.layers.Flatten(),
+    tf.keras.layers.Flatten(), # 攤平層
     tf.keras.layers.Dense(128, activation='relu'),
     tf.keras.layers.Dropout(0.2),
     tf.keras.layers.Dense(num_classes)  # 將輸出層設為5個類別
 ])
+
+
+#
 
 # 編譯模型
 loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)

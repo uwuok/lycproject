@@ -46,16 +46,19 @@ def take_picture():
     ret, frame = cap.read()
     if ret:
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"photo_{timestamp}.png"
+        filename = f"photo_{timestamp}.jpg"
 
         # 開啟一個新執行緒來保存圖片
         # threading.Thread(target=cv2.imwrite, args=(filename, frame)).start()
         # threading.Thread(target=imgpro.proc_0919, args=(frame, timestamp)).start()
         cv2.imwrite(filename, frame)
         r1, r2 = img_pre_proc.pre_proc(frame, timestamp)
-        res1 = call_module.predict_r1(r1, 'ROI 1')
+        res1 = -87
+        res2 = call_module.predict(r2, 'ROI 2')
         # res2 = call_module.predict_r2(r2, 'ROI 2')
-        update_json('Flusher_level_bar_R1', r1)
+        # print(res2)
+        update_json('Flusher_level_bar_R1', int(res1))
+        update_json('Flusher_level_bar_R2', int(res2))
 
         global cnt
         cnt += 1

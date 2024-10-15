@@ -133,7 +133,7 @@ def proc_0919(img, timestamp):
     f1 = f"photo_{timestamp}_1.png"
     f2 = f"photo_{timestamp}_2.png"
     calculate_white_ratio(r1, ms1)
-    # cv2.imwrite(f1, r1)
+    # cv2.imwrite(f1, r2)
     # cv2.imwrite(f2, r2)
     # print(f"已保存 ROI1 為： {f1}")
     # print(f"已保存 ROI2 為： {f2}")
