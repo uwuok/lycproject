@@ -9,7 +9,7 @@ def predict(img, tag=''):
     current_path = os.path.dirname(os.path.abspath(__file__))
     os.chdir(current_path)
 
-    model_path = 'cnn_200_new.h5'
+    model_path = 'cnn_200_1015.h5'
     model = tf.keras.models.load_model(model_path)
 
     # 圖片格式轉換
