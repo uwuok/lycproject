@@ -51,13 +51,13 @@ def take_picture():
         # 開啟一個新執行緒來保存圖片
         # threading.Thread(target=cv2.imwrite, args=(filename, frame)).start()
         # threading.Thread(target=imgpro.proc_0919, args=(frame, timestamp)).start()
-        cv2.imwrite(filename, frame)
+        # cv2.imwrite(filename, frame)
         r1, r2 = img_pre_proc.pre_proc(frame, timestamp)
         res1 = -87
         res2 = call_module.predict(r2, 'ROI 2')
         # res2 = call_module.predict_r2(r2, 'ROI 2')
         # print(res2)
-        update_json('Flusher_level_bar_R1', int(res1))
+        update_json('Flusher_level_bar_R1', int(res1))  # int64 to int
         update_json('Flusher_level_bar_R2', int(res2))
 
         global cnt

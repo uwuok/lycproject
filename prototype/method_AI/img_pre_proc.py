@@ -55,9 +55,9 @@ def pre_proc(img, timestamp):
     cv2.imshow('img', cv2.resize(current_img, None, fx=0.5, fy=0.5))
     roi1, roi2 = get_roi(current_img)  # 獲取兩個 ROI 區域
 
-    cv2.imshow('roi1', cv2.resize(roi1, None, fx=0.5, fy=0.5))
-    cv2.waitKey()
-    cv2.destroyAllWindows()
+    # cv2.imshow('roi1', cv2.resize(roi1, None, fx=0.5, fy=0.5))
+    # cv2.waitKey()
+    # cv2.destroyAllWindows()
 
     # save origin image
     ori_dir = os.path.join(current_dir, 'origin')
