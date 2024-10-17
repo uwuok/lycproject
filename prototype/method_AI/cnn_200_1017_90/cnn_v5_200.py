@@ -51,7 +51,7 @@ model = tf.keras.models.Sequential([
     tf.keras.layers.BatchNormalization(),
     tf.keras.layers.Dropout(0.5),
     tf.keras.layers.Flatten(),
-    tf.keras.layers.Dense(64, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.1)),
+    tf.keras.layers.Dense(64, activation='relu'),
     tf.keras.layers.Dropout(0.5),
     tf.keras.layers.Dense(32, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.1)),
     tf.keras.layers.Dense(num_classes, activation='softmax')
@@ -163,4 +163,4 @@ plt.legend()
 plt.show()
 
 # 儲存模型
-model.save('cnn_200_1016_12864.h5')
+model.save('cnn_200.h5')
