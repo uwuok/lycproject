@@ -40,12 +40,12 @@ def get_roi(image):
     roi1 = image[y1:y1 + h1, x1:x1 + w1]
     x2, y2, w2, h2 = cv2.boundingRect(pts2)
     roi2 = image[y2:y2 + h2, x2:x2 + w2]
-    cv2.imshow('roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
-    cv2.imshow('roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
+    # cv2.imshow('roi1', cv2.resize(roi1, None, fx=0.2, fy=0.2))
+    # cv2.imshow('roi2', cv2.resize(roi2, None, fx=0.2, fy=0.2))
     cv2.waitKey()
     cv2.destroyAllWindows()
-    print(f'pts1 = ({x1}, {y1}), ({x1}, {y1 + h1}), ({x1 + w1}, {y1 + h1}), ({x1 + w1}, {y1})')
-    print(f'pts2 = ({x2}, {y2}), ({x2}, {y2 + h2}), ({x2 + w2}, {y2 + h2}), ({x2 + w2}, {y2})')
+    # print(f'pts1 = ({x1}, {y1}), ({x1}, {y1 + h1}), ({x1 + w1}, {y1 + h1}), ({x1 + w1}, {y1})')
+    # print(f'pts2 = ({x2}, {y2}), ({x2}, {y2 + h2}), ({x2 + w2}, {y2 + h2}), ({x2 + w2}, {y2})')
     return roi1, roi2
 
 
@@ -60,32 +60,25 @@ def pre_proc(img, timestamp):
     # cv2.destroyAllWindows()
 
     # save origin image
-    ori_dir = os.path.join(current_dir, 'origin')
-    if not os.path.exists(ori_dir):
-        os.makedirs(ori_dir)
-    ori_filename = os.path.join(ori_dir, 'ori.jpg')
-    cv2.imwrite(ori_filename, img)
-
-    # save resize image
-    resized_dir = os.path.join(current_dir, 'resized')
-    if not os.path.exists(resized_dir):
-        os.makedirs(resized_dir)
-    resized_filename = os.path.join(resized_dir, 'resized.jpg')
-    cv2.imwrite(resized_filename, cv2.resize(img, None, fx=0.1, fy=0.1))
+    # ori_dir = os.path.join(current_dir, 'origin')
+    # if not os.path.exists(ori_dir):
+    #     os.makedirs(ori_dir)
+    # ori_filename = os.path.join(ori_dir, 'ori.jpg')
+    # cv2.imwrite(ori_filename, img)
 
     # save roi1 to r1 dir
-    r1_dir = os.path.join(current_dir, 'r1')
-    if not os.path.exists(r1_dir):
-        os.makedirs(r1_dir)
-    r1_filename = os.path.join(r1_dir, 'r1.jpg')
-    cv2.imwrite(r1_filename, roi1)
+    # r1_dir = os.path.join(current_dir, 'r1')
+    # if not os.path.exists(r1_dir):
+    #     os.makedirs(r1_dir)
+    # r1_filename = os.path.join(r1_dir, 'r1.jpg')
+    # cv2.imwrite(r1_filename, roi1)
 
     # save roi2 to r2 dir
-    r2_dir = os.path.join(current_dir, 'r2')
-    if not os.path.exists(r2_dir):
-        os.makedirs(r2_dir)
-    r2_filename = os.path.join(r2_dir, 'r2.jpg')
-    cv2.imwrite(r2_filename, roi2)
+    # r2_dir = os.path.join(current_dir, 'r2')
+    # if not os.path.exists(r2_dir):
+    #     os.makedirs(r2_dir)
+    # r2_filename = os.path.join(r2_dir, 'r2.jpg')
+    # cv2.imwrite(r2_filename, roi2)
 
     fx, fy = 0.1, 0.1
 
