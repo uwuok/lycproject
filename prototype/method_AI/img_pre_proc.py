@@ -73,6 +73,20 @@ def pre_proc(img, timestamp):
     resized_filename = os.path.join(resized_dir, 'resized.jpg')
     cv2.imwrite(resized_filename, cv2.resize(img, None, fx=0.1, fy=0.1))
 
+    # save resize roi1
+    resized_dir = os.path.join(current_dir, 'resized_r1')
+    if not os.path.exists(resized_dir):
+        os.makedirs(resized_dir)
+    resized_filename = os.path.join(resized_dir, 'resized_r1.jpg')
+    cv2.imwrite(resized_filename, cv2.resize(roi1, None, fx=0.1, fy=0.1))
+
+    # save resize roi2
+    resized_dir = os.path.join(current_dir, 'resized_r2')
+    if not os.path.exists(resized_dir):
+        os.makedirs(resized_dir)
+    resized_filename = os.path.join(resized_dir, 'resized_r2.jpg')
+    cv2.imwrite(resized_filename, cv2.resize(roi2, None, fx=0.1, fy=0.1))
+
     # save roi1 to r1 dir
     r1_dir = os.path.join(current_dir, 'r1')
     if not os.path.exists(r1_dir):
